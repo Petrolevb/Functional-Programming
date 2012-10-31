@@ -20,7 +20,8 @@ valueCard :: Card -> Integer
 valueCard c = valueRank (rank c)
 
 value :: Hand -> Integer
-
+value Empty = 0
+value (x:xs) = valueCard x + value xs
 
 -- From a given hand, determinate if loose
 gameOver :: Hand -> Bool
