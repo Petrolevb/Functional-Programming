@@ -51,5 +51,6 @@ h <+ Empty      = h
 
 
 
-
-
+-- Property for <+
+prop_onTopOf assoc :: Hand -> Hand -> Hand -> Bool
+prop_onTopOf assoc p1 p2 p3 = p1 <+ (p2 <+ p3 ) == (p1 <+ p2 ) <+ p3
