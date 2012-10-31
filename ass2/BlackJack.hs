@@ -19,9 +19,15 @@ valueRank King = 10
 valueCard :: Card -> Integer
 valueCard c = valueRank (rank c)
 
+
+numberOfAces :: Hand->Integer
+numberOfAces Empty = 0
+numberOfAces (Add Aces h) = 1 + numberOfAces h
+numberOfAces (Add _ h ) = numberOfAces h
+
 value :: Hand -> Integer
 value Empty = 0
-value (add c h)) = valueCard c + value h
+value (Add c h)) = valueCard c + value h
 
 -- From a given hand, determinate if loose
 gameOver :: Hand -> Bool
