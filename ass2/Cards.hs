@@ -2,7 +2,7 @@
 module Cards where
 
 import Test.QuickCheck
-import Random
+import System.Random
 
 -- A card has a rank and belongs to a suit.
 
