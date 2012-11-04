@@ -65,6 +65,7 @@ winner h hb                                           = Bank
 
 
 -- Add an Hand on the other
+infixr 5 <+
 (<+) :: Hand -> Hand -> Hand
 Empty <+ h      = h
 h <+ Empty      = h
