@@ -2,7 +2,7 @@ module BlackJack where
 
 import Wrapper
 import Cards
-import Test.QuickCheck
+
 {-
    Execution of size hand
 
@@ -25,7 +25,7 @@ empty = Empty
 -- Return the rank of a card
 valueRank :: Rank -> Integer
 valueRank (Numeric n) = n
-valueRank Jack 	      = 10
+valueRank Jack          = 10
 valueRank Queen       = 10
 valueRank King        = 10
 valueRank Ace         = 11
@@ -65,7 +65,7 @@ winner h hb                                           = Bank
 
 
 -- Add an Hand on the other
-infixr 5 <+
+infixr 5 <+ -- same priority as :
 (<+) :: Hand -> Hand -> Hand
 Empty <+ h      = h
 h <+ Empty      = h
