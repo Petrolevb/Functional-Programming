@@ -1,0 +1,12 @@
+Changlog
+
+4-11-12 :
+Rectification des fonctions suivantes :
+- empty, problème à la compilation.
+- valueRank, ajout de l'as car erreur lorsqu'on cherche cette valeur.
+- value, ajout des cas en fonction de l'as. S'il y en a plusieurs ils valent tous 1, quand il n'y en a qu'un, on regarde si le reste de la main dépasse 21 lorsqu'il vaut 11 points et si oui on lui donne la valeur de 1 point.
+- winner, si la main du joueur dépasse 21 il perd.
+
+Ajout de mains de test en fin de fichier afin d'essayer les fonctions.
+Mise en commentaire de la propriété car elle ne compile pas.
+Execution détaillé de size comme demandé dans le sujet.
