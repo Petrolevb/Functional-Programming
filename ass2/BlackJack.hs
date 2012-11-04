@@ -2,7 +2,7 @@ module BlackJack where
 
 import Wrapper
 import Cards
-
+import Test.QuickCheck
 {-
    Execution of size hand
 
