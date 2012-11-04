@@ -4,9 +4,9 @@ import Wrapper
 import Cards
 
 {-
-   Execution of size hand2
+   Execution of size hand
 
-   size hand2
+   size hand
    = size (Add (Card (Numeric 2) Hearts)
                (Add (Card Jack Spades) Empty))
    = 1 + size (Add (Card Jack Spades) Empty)
