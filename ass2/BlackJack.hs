@@ -2,6 +2,7 @@ module BlackJack where
 
 import Wrapper
 import Cards
+import Test.QuickCheck
 
 {-
    Execution of size hand
@@ -52,8 +53,8 @@ value (Add c h) | numberOfAces (Add c h) > 1
 
 -- From a given hand, determinate if loose
 gameOver :: Hand -> Bool
-gameOver n | (value n > 21) = True
-gameOver n 		    = False
+gameOver n | value n > 21 = True
+gameOver n                = False
 
 
 -- Determinate between two hands who wins Guest in first, Bank in second
@@ -69,13 +70,15 @@ infixr 5 <+ -- same priority as :
 (<+) :: Hand -> Hand -> Hand
 Empty <+ h      = h
 h <+ Empty      = h
-(Add c h) <+ hb =  (Add c (h <+ hb))
-
+(Add c h) <+ hb =  Add c (h <+ hb)
 
 
 -- Property for <+
 prop_onTopOf_assoc :: Hand -> Hand -> Hand -> Bool
 prop_onTopOf_assoc p1 p2 p3 = p1 <+ (p2 <+ p3 ) == (p1 <+ p2 ) <+ p3
+
+prop_onTopOf :: Hand -> Hand -> Bool
+prop_onTopOf p1 p2 = size(p1 <+ p2) == size p1 + size p2
 
 
 -- Hand test
