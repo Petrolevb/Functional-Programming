@@ -87,3 +87,4 @@ hand2 = Add (Card Ace Hearts) (Add (Card King Spades) Empty) -- 21
 hand3 = Add (Card Ace Hearts) (Add (Card King Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 19
 hand4 = Add (Card Ace Hearts) (Add (Card Ace Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 10
 hand5 = Add (Card (Numeric 3) Hearts) (Add (Card King Spades) (Add (Card Queen Hearts) Empty)) -- 22
+hand6 = (Add (Card Ace Spades) (Add (Card Ace Diamonds) (Add (Card King Spades) (Add (Card Ace Hearts) Empty))))
