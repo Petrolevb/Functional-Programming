@@ -26,7 +26,7 @@ empty = Empty
 -- Return the rank of a card
 valueRank :: Rank -> Integer
 valueRank (Numeric n) = n
-valueRank Ace         = 11
+valueRank Ace         = 1
 valueRank _           = 10
 
 -- Return the value of a card
@@ -42,16 +42,22 @@ numberOfAces (Add _ h )   = numberOfAces h
 -- Return the value of a hand
 value :: Hand -> Integer
 value Empty     = 0
-value (Add c h) | numberOfAces (Add c h) > 1
-                  = valueCard c + value h - (numberOfAces (Add c h) * 10)
-                | numberOfAces (Add c h) == 1 && (valueCard c + value h) > 21
-                  = valueCard c + value h - 10
-                | otherwise = valueCard c + value h
+value (Add c h)	| numberOfAces (Add c h) > 1  = valueMultiAces (Add c h)
+		| numberOfAces (Add c h) == 1 = oneAce
+                | otherwise                   = valueCard c + value h
+	where oneAce =  if (valueCard c + value h + 10) > 21
+			then valueMultiAces (Add c h)
+			else valueCard c + value h + 10
 
+
+-- 
+valueMultiAces :: Hand -> Integer
+valueMultiAces Empty = 0
+valueMultiAces (Add c h) = valueMultiAces h + valueCard c 
 
 -- From a given hand, determinate if loose
 gameOver :: Hand -> Bool
-gameOver = value n > 21
+gameOver n = value n > 21
 
 
 -- Determinate between two hands who wins Guest in first, Bank in second
@@ -77,11 +83,3 @@ prop_onTopOf_assoc p1 p2 p3 = p1 <+ (p2 <+ p3 ) == (p1 <+ p2 ) <+ p3
 prop_onTopOf :: Hand -> Hand -> Bool
 prop_onTopOf p1 p2 = size(p1 <+ p2) == size p1 + size p2
 
-
--- Hand test
-hand1 = Add (Card Ace Hearts) (Add (Card Ace Spades) Empty) -- 2
-hand2 = Add (Card Ace Hearts) (Add (Card King Spades) Empty) -- 21
-hand3 = Add (Card Ace Hearts) (Add (Card King Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 19
-hand4 = Add (Card Ace Hearts) (Add (Card Ace Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 10
-hand5 = Add (Card (Numeric 3) Hearts) (Add (Card King Spades) (Add (Card Queen Hearts) Empty)) -- 22
-hand6 = (Add (Card Ace Spades) (Add (Card Ace Diamonds) (Add (Card King Spades) (Add (Card Ace Hearts) Empty))))
