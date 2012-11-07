@@ -26,10 +26,8 @@ empty = Empty
 -- Return the rank of a card
 valueRank :: Rank -> Integer
 valueRank (Numeric n) = n
-valueRank Jack          = 10
-valueRank Queen       = 10
-valueRank King        = 10
 valueRank Ace         = 11
+valueRank _           = 10
 
 -- Return the value of a card
 valueCard :: Card -> Integer
@@ -53,8 +51,7 @@ value (Add c h) | numberOfAces (Add c h) > 1
 
 -- From a given hand, determinate if loose
 gameOver :: Hand -> Bool
-gameOver n | value n > 21 = True
-gameOver n                = False
+gameOver = value n > 21
 
 
 -- Determinate between two hands who wins Guest in first, Bank in second
