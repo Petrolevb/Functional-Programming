@@ -35,18 +35,18 @@ valueCard c = valueRank (rank c)
 
 -- Return the number of aces in a hand
 numberOfAces :: Hand->Integer
-numberOfAces Empty 	  = 0
+numberOfAces Empty                = 0
 numberOfAces (Add (Card Ace _) h) = 1 + numberOfAces h
-numberOfAces (Add _ h )   = numberOfAces h
+numberOfAces (Add _ h )           = numberOfAces h
 
 -- Return the value of a hand when there is more than one ace
 valueMultiAces :: Hand -> Integer
-valueMultiAces Empty = 0
+valueMultiAces Empty     = 0
 valueMultiAces (Add c h) = valueMultiAces h + valueCard c 
 
 -- Return the value of a hand
 value :: Hand -> Integer
-value Empty     = 0
+value Empty                                   = 0
 value (Add c h)	| numberOfAces (Add c h) > 1  = valueMultiAces (Add c h)
 		| numberOfAces (Add c h) == 1 = oneAce
                 | otherwise                   = valueCard c + value h
