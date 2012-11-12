@@ -4,6 +4,7 @@ import Wrapper
 import Cards
 import Test.QuickCheck
 import Data.List
+import System.Random
 
 {-
    Execution of size hand
@@ -99,6 +100,16 @@ fullDeck :: Hand
 fullDeck = addSuits lSuit
   where 
         lSuit = [Spades, Hearts, Clubs, Diamonds]
+
+
+shuffle :: StdGen -> Hand -> Hand
+shuffle _ [] = []
+
+
+
+belongsTo :: Card -> Hand -> Bool
+belongsTo _ [] = False
+belongsTo c (Add c' h) = c == c'|| c `belongsTo` h
 
 
 
