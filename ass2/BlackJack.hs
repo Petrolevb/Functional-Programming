@@ -109,9 +109,9 @@ shuffle _ Empty = Empty
 shuffle g h = 
 --	(x, y) = randomR(1, size h)
 --	c = takeCardNum x h
-	c <+ (shuffle y (removeCard c h))
+	Add c (shuffle y (removeCard c h))
 	where 
-		(x, y) = randomR(1, size h)
+		(x, y) = randomR(1, size h) g
 		c = takeCardNum x h
 	
 	-- select an arbitrary card
