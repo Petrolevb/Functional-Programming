@@ -4,7 +4,7 @@ import Wrapper
 import Cards
 import Test.QuickCheck
 import Data.List
-import Random
+import System.Random
 
 {-
    Execution of size hand
@@ -121,7 +121,7 @@ removeCard card (Add c h) | card == c = h
 
 
 belongsTo :: Card -> Hand -> Bool
-belongsTo _ [] = False
+belongsTo _ Empty      = False
 belongsTo c (Add c' h) = c == c'|| c `belongsTo` h
 
 
