@@ -92,6 +92,7 @@ fullDeck = addSuits lSuit
 shuffle :: StdGen -> Hand -> Hand
 shuffle _ Empty = Empty
 shuffle g h = undefined
+--	(x, y) = randomR(0, size h)
 	-- select an arbitrary card
 	-- remove from the new card
 	-- return the shuffled hand wich stay
@@ -101,16 +102,15 @@ removeCard :: Card -> Hand -> Hand
 removeCard _ Empty = Empty
 removeCard card (Add c h) | card == c = h
 			  | otherwise = Add c (removeCard card h)
-	-- card == c et on retourne h
-	-- card != c et on retourne c + removeCard h
-
-
 
 belongsTo :: Card -> Hand -> Bool
 belongsTo _ Empty      = False
 belongsTo c (Add c' h) = c == c'|| c `belongsTo` h
 
 
+takeCardNum :: Integer -> Hand -> Card
+takeCardNum 1 (Add c h) = c
+takeCardNum n (Add c h) = takeCardNum (n-1) h
 
 -- Hand test
 hand1 = Add (Card Ace Hearts) (Add (Card Ace Spades) Empty) -- 2
