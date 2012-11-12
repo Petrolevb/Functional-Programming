@@ -107,7 +107,7 @@ removeCard card (Add c h) | card == c = h
 
 
 belongsTo :: Card -> Hand -> Bool
-belongsTo _ Empty = False
+belongsTo _ Empty      = False
 belongsTo c (Add c' h) = c == c'|| c `belongsTo` h
 
 
