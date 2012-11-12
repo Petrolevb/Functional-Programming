@@ -91,8 +91,14 @@ fullDeck = addSuits lSuit
 -- The Idea is to take a random card, remove it from the deck and add it to a new deck
 shuffle :: StdGen -> Hand -> Hand
 shuffle _ Empty = Empty
-shuffle g h = undefined
---	(x, y) = randomR(0, size h)
+shuffle g h = 
+--	(x, y) = randomR(1, size h)
+--	c = takeCardNum x h
+	c <+ (shuffle y (removeCard c h))
+	where 
+		(x, y) = randomR(1, size h)
+		c = takeCardNum x h
+	
 	-- select an arbitrary card
 	-- remove from the new card
 	-- return the shuffled hand wich stay
