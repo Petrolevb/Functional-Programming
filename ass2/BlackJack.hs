@@ -93,6 +93,7 @@ draw :: Hand -> Hand -> (Hand, Hand)
 draw Empty _ = error "draw: The deck is empty"
 draw (Add d deck) hand = (deck, Add d hand)
 
+
 -- Play for the bank until it has 16 or more
 playBank :: Hand -> Hand
 playBank deck = playBank' (deck, Empty)
