@@ -3,6 +3,7 @@ module BlackJack where
 import Wrapper
 import Cards
 import Test.QuickCheck
+import System.Random
 
 -- Define a function returning an empty hand
 
@@ -85,6 +86,29 @@ addSuits (lSuit:ls) = createSuit lSuit lRank <+ addSuits ls
 fullDeck :: Hand
 fullDeck = addSuits lSuit
   where lSuit = [Spades, Hearts, Clubs, Diamonds]
+
+
+-- The Idea is to take a random card, remove it from the deck and add it to a new deck
+shuffle :: StdGen -> Hand -> Hand
+shuffle _ Empty = Empty
+shuffle g h = undefined
+	-- select an arbitrary card
+	-- remove from the new card
+	-- return the shuffled hand wich stay
+
+
+removeCard :: Card -> Hand -> Hand
+removeCard _ Empty = Empty
+removeCard card (Add c h) | card == c = h
+			  | otherwise = Add c (removeCard card h)
+	-- card == c et on retourne h
+	-- card != c et on retourne c + removeCard h
+
+
+
+belongsTo :: Card -> Hand -> Bool
+belongsTo _ Empty = False
+belongsTo c (Add c' h) = c == c'|| c `belongsTo` h
 
 
 
