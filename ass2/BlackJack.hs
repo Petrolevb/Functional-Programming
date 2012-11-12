@@ -134,6 +134,15 @@ takeCardNum :: Integer -> Hand -> Card
 takeCardNum 1 (Add c h) = c
 takeCardNum n (Add c h) = takeCardNum (n-1) h
 
+
+
+prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
+prop_shuffle_sameCards g c h = c `belongsTo` h == c `belongsTo` shuffle g h
+
+prop_size_shuffle :: StdGen -> Hand -> Bool
+prop_size_shuffle g h = size h == size (shuffle g h)
+
+
 -- Hand test
 hand1 = Add (Card Ace Hearts) (Add (Card Ace Spades) Empty) -- 2
 hand2 = Add (Card Ace Hearts) (Add (Card King Spades) Empty) -- 21
