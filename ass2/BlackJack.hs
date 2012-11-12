@@ -88,6 +88,21 @@ fullDeck = addSuits lSuit
   where lSuit = [Spades, Hearts, Clubs, Diamonds]
 
 
+-- Draw the first card of the deck to put it in the hand
+draw :: Hand -> Hand -> (Hand, Hand)
+draw Empty _ = error "draw: The deck is empty"
+draw (Add d deck) hand = (deck, Add d hand)
+
+-- Play for the bank until it has 16 or more
+playBank :: Hand -> Hand
+playBank deck = playBank' (deck, Empty)
+
+playBank' :: (Hand, Hand) -> Hand
+playBank' (deck, bankHand) | value bankHand < 16 = playBank' (deck', bankHand')
+                           | otherwise           = bankHand
+  where (deck', bankHand') = draw deck bankHand
+
+
 -- The Idea is to take a random card, remove it from the deck and add it to a new deck
 shuffle :: StdGen -> Hand -> Hand
 shuffle _ Empty = Empty
