@@ -3,20 +3,7 @@ module BlackJack where
 import Wrapper
 import Cards
 import Test.QuickCheck
-import Data.List
 import System.Random
-
-{-
-   Execution of size hand
-
-   size hand
-   = size (Add (Card (Numeric 2) Hearts)
-               (Add (Card Jack Spades) Empty))
-   = 1 + size (Add (Card Jack Spades) Empty)
-   = 1 + 1 + size (Empty)
-   = 1 + 1 + 0
-   = 2
--}
 
 -- Define a function returning an empty hand
 
@@ -48,13 +35,11 @@ valueMultiAces (Add c h) = valueMultiAces h + valueCard c
 
 -- Return the value of a hand
 value :: Hand -> Integer
-value Empty                                   = 0
-value (Add c h)	| numberOfAces (Add c h) > 1  = valueMultiAces (Add c h)
-		| numberOfAces (Add c h) == 1 = oneAce
-                | otherwise                   = valueCard c + value h
-	where oneAce =  if (valueCard c + value h + 10) > 21
-			then valueMultiAces (Add c h)
-			else valueCard c + value h + 10
+value Empty          = 0
+value h | val' <= 21 = val'
+        | otherwise  = val
+  where val  = valueMultiAces h
+        val' = val + 10 * numberOfAces h
 
 
 -- From a given hand, determinate if loose
@@ -86,20 +71,21 @@ prop_onTopOf p1 p2 = size(p1 <+ p2) == size p1 + size p2
 
 
 -- Creating a full Deck
+-- Create the 13 cards of a Suit
+createSuit :: Suit -> [Rank] -> Hand
+createSuit _ []           = Empty
+createSuit s (rank:ranks) = Add (Card rank s) (createSuit s ranks)
 
-createSuit :: Suit -> Hand -> [Rank] -> Hand
-createSuit s hand [] = hand
-createSuit s hand (rank:ranks) = Add (Card rank s) (createSuit s hand ranks)
-
+-- Add all cards from createSuit together
 addSuits :: [Suit] -> Hand
-addSuits [] = Empty
-addSuits (lSuit:ls) = createSuit lSuit Empty lRank <+ (addSuits ls)
-  where lRank = ([Numeric x | x <- [2..10]] ++ [Jack, Queen, King, Ace])
+addSuits []         = Empty
+addSuits (lSuit:ls) = createSuit lSuit lRank <+ addSuits ls
+  where lRank = [Numeric x | x <- [2..10]] ++ [Jack, Queen, King, Ace]
 
+-- Create a full deck of cards
 fullDeck :: Hand
 fullDeck = addSuits lSuit
-  where 
-        lSuit = [Spades, Hearts, Clubs, Diamonds]
+  where lSuit = [Spades, Hearts, Clubs, Diamonds]
 
 
 -- The Idea is to take a random card, remove it from the deck and add it to a new deck
