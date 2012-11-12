@@ -3,6 +3,7 @@ module BlackJack where
 import Wrapper
 import Cards
 import Test.QuickCheck
+import Data.List
 
 {-
    Execution of size hand
@@ -84,21 +85,21 @@ prop_onTopOf p1 p2 = size(p1 <+ p2) == size p1 + size p2
 
 
 -- Creating a full Deck
-{-
-createSuit :: Suit -> Hand -> Hand
-createSuit s Empty                 = createSuit s (Add (Card Ace s) Empty)
-createSuit s h  | size h + 1 <= 10 = createSuit s (Add (Card (Numeric (size h + 1)) s) h)
-                | size h + 1 == 11 = createSuit s (Add (Card Jack s) h)
-                | size h + 1 == 12 = createSuit s (Add (Card Queen s) h)
-                | size h + 1 == 13 = createSuit s (Add (Card King s) h)
 
+createSuit :: Suit -> Hand -> [Rank] -> Hand
+createSuit s hand [] = hand
+createSuit s hand (rank:ranks) = Add (Card rank s) (createSuit s hand ranks)
 
-h = createSuit Hearts Empty
-h2 = createSuit Hearts (Add (Card Ace Hearts) Empty)
+addSuits :: [Suit] -> Hand
+addSuits [] = Empty
+addSuits (lSuit:ls) = createSuit lSuit Empty lRank <+ (addSuits ls)
+  where lRank = ([Numeric x | x <- [2..10]] ++ [Jack, Queen, King, Ace])
 
 fullDeck :: Hand
-fullDeck = undefined
--}
+fullDeck = addSuits lSuit
+  where 
+        lSuit = [Spades, Hearts, Clubs, Diamonds]
+
 
 
 -- Hand test
