@@ -1,6 +1,6 @@
 
 import BaseSudoku
-
+import Data.Char(chr)
 
 -- Function to print the Sudoku
 printSudoku :: Sudoku -> IO ()
@@ -17,4 +17,4 @@ printLine (a:as) = do
 -- This function will convert the Maybe Int into a single char
 printCase :: Maybe Int -> Char
 printCase Nothing = '.'
-printCase (Just n) = head (show n)
+printCase (Just n) = chr n
