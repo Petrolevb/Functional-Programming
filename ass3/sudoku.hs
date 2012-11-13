@@ -24,7 +24,7 @@ isSudoku s = undefined
 -- isSolved check if it stay some empty cases
 isSolved :: Sudoku -> Bool
 isSolved s = isSolvedLine sl && isSolved (Sudoku ss)
-	where (sl:ss) = rows s
-
-isSolvedLine :: [Maybe Int] -> Bool
-isSolvedLine = elem Nothing 
+	where 
+		(sl:ss) = rows s
+		-- A solved line is a line without 'Nothing'
+		isSolvedLine = notElem Nothing 
