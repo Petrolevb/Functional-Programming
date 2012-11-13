@@ -108,41 +108,21 @@ playBank' deck bankHand | value bankHand < 16 = playBank' deck' bankHand'
 shuffle :: StdGen -> Hand -> Hand
 shuffle g deck = shuffle' g (deck, Empty)
 
--- draw a random card out of deck and put it in d
+-- draw random cards out of deck and put it in d
 shuffle' :: StdGen -> (Hand, Hand) -> Hand
 shuffle' _ (Empty, h) = h
 shuffle' g (deck, h)  = shuffle' g' takeCard
   where (rand, g') = randomR(1, size deck) g
         takeCard   = takeCardNum rand deck h
 
--- draw the n-th card out of deck to put it in h
+-- draw the i-th card out of deck to put it in h
 takeCardNum :: Integer -> Hand -> Hand -> (Hand, Hand)
 takeCardNum 1 deck h = draw deck h
-takeCardNum n (Add c deck) h = (Add c deck', h')
+takeCardNum i (Add c deck) h = (Add c deck', h')
   where deck'    = fst takeCard
         h'       = snd takeCard
-        takeCard = takeCardNum (n-1) deck h
+        takeCard = takeCardNum (i-1) deck h
 
-{-
-shuffle g h = Add c (shuffle y (removeCard c h))
-  where 
-    (x, y) = randomR(1, size h) g
-    c = takeCardNum x h
-
-    -- select an arbitrary card
-    -- remove from the new card
-    -- return the shuffled hand wich stay
-
-
-removeCard :: Card -> Hand -> Hand
-removeCard _ Empty = Empty
-removeCard card (Add c h) | card == c = h
-			  | otherwise = Add c (removeCard card h)
-
-takeCardNum :: Integer -> Hand -> Card
-takeCardNum 1 (Add c h) = c
-takeCardNum n (Add c h) = takeCardNum (n-1) h
--}
 
 -- Function that tell if a card is in a hand
 belongsTo :: Card -> Hand -> Bool
@@ -171,13 +151,3 @@ implementation = Interface
   , iPlayBank = playBank
   , iShuffle  = shuffle
   }
-
-
--- Hand test
-hand1 = Add (Card Ace Hearts) (Add (Card Ace Spades) Empty) -- 2
-hand2 = Add (Card Ace Hearts) (Add (Card King Spades) Empty) -- 21
-hand3 = Add (Card Ace Hearts) (Add (Card King Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 19
-hand4 = Add (Card Ace Hearts) (Add (Card Ace Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 10
-hand5 = Add (Card (Numeric 3) Hearts) (Add (Card King Spades) (Add (Card Queen Hearts) Empty)) -- 23
-hand6 = Add (Card Ace Spades) (Add (Card Ace Diamonds) (Add (Card King Spades) (Add (Card Ace Hearts) Empty))) -- 13
-hand7 = Add (Card (Numeric 8) Hearts) (Add (Card Ace Diamonds)  (Add (Card (Numeric 3) Hearts) Empty)) -- 12
