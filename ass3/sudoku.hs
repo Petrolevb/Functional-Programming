@@ -6,6 +6,7 @@
 -}
 
 data Sudoku = Sudoku { rows:: [[Maybe Int]] }
+	deriving (Show)
 
 -- Return an empty Sudoku
 allBlankSudoku :: Sudoku
@@ -18,10 +19,12 @@ where y is 9 empty arrays
 
 -- A sudoku is a 9 row by 9 column cases full of digit
 isSudoku :: Sudoku -> Bool
-isSudoku s = False
+isSudoku s = undefined
 
-isRow :: [Maybe Int] -> Int -> Bool
-isRow (a:[]) 1 = True
-isRow (a:as) 0        = False
-isRow [] _          = False
-isRow(a:as) n        = isRow as (n-1)
+-- isSolved check if it stay some empty cases
+isSolved :: Sudoku -> Bool
+isSolved s = isSolvedLine sl && isSolved (Sudoku ss)
+	where (sl:ss) = rows s
+
+isSolvedLine :: [Maybe Int] -> Bool
+isSolvedLine = elem Nothing 
