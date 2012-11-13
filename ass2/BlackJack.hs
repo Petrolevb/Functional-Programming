@@ -6,7 +6,6 @@ import Test.QuickCheck
 import System.Random
 
 -- Define a function returning an empty hand
-
 empty :: Hand
 empty = Empty
 
@@ -93,48 +92,44 @@ draw :: Hand -> Hand -> (Hand, Hand)
 draw Empty _ = error "draw: The deck is empty"
 draw (Add d deck) hand = (deck, Add d hand)
 
+
 -- Play for the bank until it has 16 or more
 playBank :: Hand -> Hand
-playBank deck = playBank' (deck, Empty)
+playBank deck = playBank' deck Empty
 
-playBank' :: (Hand, Hand) -> Hand
-playBank' (deck, bankHand) | value bankHand < 16 = playBank' (deck', bankHand')
-                           | otherwise           = bankHand
+playBank' :: Hand -> Hand -> Hand
+playBank' deck bankHand | value bankHand < 16 = playBank' deck' bankHand'
+                        | otherwise           = bankHand
   where (deck', bankHand') = draw deck bankHand
 
 
--- The Idea is to take a random card, remove it from the deck and add it to a new deck
+-- The Idea is to take a random card,
+-- remove it from the deck and add it to a new deck
 shuffle :: StdGen -> Hand -> Hand
-shuffle _ Empty = Empty
-shuffle g h = 
---	(x, y) = randomR(1, size h)
---	c = takeCardNum x h
-	Add c (shuffle y (removeCard c h))
-	where 
-		(x, y) = randomR(1, size h) g
-		c = takeCardNum x h
-	
-	-- select an arbitrary card
-	-- remove from the new card
-	-- return the shuffled hand wich stay
+shuffle g deck = shuffle' g (deck, Empty)
+
+-- draw random cards out of deck and put it in d
+shuffle' :: StdGen -> (Hand, Hand) -> Hand
+shuffle' _ (Empty, h) = h
+shuffle' g (deck, h)  = shuffle' g' takeCard
+  where (rand, g') = randomR(1, size deck) g
+        takeCard   = takeCardNum rand deck h
+
+-- draw the i-th card out of deck to put it in h
+takeCardNum :: Integer -> Hand -> Hand -> (Hand, Hand)
+takeCardNum 1 deck h = draw deck h
+takeCardNum i (Add c deck) h = (Add c deck', h')
+  where deck'    = fst takeCard
+        h'       = snd takeCard
+        takeCard = takeCardNum (i-1) deck h
 
 
-removeCard :: Card -> Hand -> Hand
-removeCard _ Empty = Empty
-removeCard card (Add c h) | card == c = h
-			  | otherwise = Add c (removeCard card h)
-
+-- Function that tell if a card is in a hand
 belongsTo :: Card -> Hand -> Bool
 belongsTo _ Empty      = False
 belongsTo c (Add c' h) = c == c'|| c `belongsTo` h
 
-
-takeCardNum :: Integer -> Hand -> Card
-takeCardNum 1 (Add c h) = c
-takeCardNum n (Add c h) = takeCardNum (n-1) h
-
-
-
+-- Shuffle properties
 prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
 prop_shuffle_sameCards g c h = c `belongsTo` h == c `belongsTo` shuffle g h
 
@@ -142,11 +137,17 @@ prop_size_shuffle :: StdGen -> Hand -> Bool
 prop_size_shuffle g h = size h == size (shuffle g h)
 
 
--- Hand test
-hand1 = Add (Card Ace Hearts) (Add (Card Ace Spades) Empty) -- 2
-hand2 = Add (Card Ace Hearts) (Add (Card King Spades) Empty) -- 21
-hand3 = Add (Card Ace Hearts) (Add (Card King Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 19
-hand4 = Add (Card Ace Hearts) (Add (Card Ace Spades) (Add (Card (Numeric 8) Hearts) Empty)) -- 10
-hand5 = Add (Card (Numeric 3) Hearts) (Add (Card King Spades) (Add (Card Queen Hearts) Empty)) -- 23
-hand6 = Add (Card Ace Spades) (Add (Card Ace Diamonds) (Add (Card King Spades) (Add (Card Ace Hearts) Empty))) -- 13
-hand7 = Add (Card (Numeric 8) Hearts) (Add (Card Ace Diamonds)  (Add (Card (Numeric 3) Hearts) Empty)) -- 12
+-- Interface
+main :: IO()
+main = runGame implementation
+
+implementation = Interface
+  { iEmpty    = empty
+  , iFullDeck = fullDeck
+  , iValue    = value
+  , iGameOver = gameOver
+  , iWinner   = winner
+  , iDraw     = draw
+  , iPlayBank = playBank
+  , iShuffle  = shuffle
+  }
