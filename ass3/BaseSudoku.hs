@@ -1,3 +1,4 @@
+module BaseSudoku where
 {-
 	Assignements Functionnal
 		Sudoku
