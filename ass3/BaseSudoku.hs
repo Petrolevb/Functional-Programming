@@ -24,4 +24,4 @@ isSudoku s = undefined
 
 -- isSolved check if it stay some empty cases
 isSolved :: Sudoku -> Bool
-isSolved s = and $ map (\x -> notElem Nothing x) (rows s)
+isSolved s = all (notElem Nothing) (rows s)
