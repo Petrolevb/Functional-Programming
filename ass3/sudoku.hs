@@ -21,7 +21,7 @@ isSudoku :: Sudoku -> Bool
 isSudoku s = False
 
 isRow :: [Maybe Int] -> Int -> Bool
-isRow (Maybe Int) 1 = True
-isRow a:as 0        = False
+isRow (a:[]) 1 = True
+isRow (a:as) 0        = False
 isRow [] _          = False
-isRow a:as n        = isRow as (n-1)
+isRow(a:as) n        = isRow as (n-1)
