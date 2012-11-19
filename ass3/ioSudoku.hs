@@ -1,3 +1,4 @@
+module IoSudoku where
 
 import BaseSudoku
 import System.IO
