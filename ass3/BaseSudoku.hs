@@ -6,6 +6,7 @@ module BaseSudoku where
 	Vincent | Erwan
 -}
 import Test.QuickCheck
+import Data.List(transpose)
 
 data Sudoku = Sudoku { rows:: [[Maybe Int]] }
 	deriving (Show)
@@ -59,13 +60,31 @@ isOkayBlock []           = True
 isOkayBlock (Nothing:bs) = isOkayBlock bs
 isOkayBlock (b:bs)       = b `notElem` bs && isOkayBlock bs
 
-prop_Sudoku :: Sudoku -> Bool
-prop_Sudoku = isSudoku
+
+blocks :: Sudoku -> [Block]
+blocks s = rows s ++ (transpose $ rows s) ++ (buildBlocks s)
+
+buildBlocks :: Sudoku -> [Block]
+buildBlocks s = 
+	(concat $ (map (take 3) (take 3 $ rows s))) : 
+	(concat $ (map (take 3) (map (drop 3) (take 3 $ rows s)))) :
+	(concat $ (map (drop 6) (take 3 $ rows s))) :
+	(concat $ (map (take 3) (take 3 $ drop 3 $ rows s))) :
+	(concat $ (map (take 3) (map (drop 3) (take 3 $ drop 3 $ rows s)))) :
+	(concat $ (map (drop 6) (take 3 $ drop 3 $ rows s))) :
+	(concat $ (map (take 3) (drop 6 $ rows s))) :
+	(concat $ (map (take 3) (map (drop 3) (drop 6 $ rows s)))) :
+	[(concat $ (map (drop 6) (drop 6 $ rows s)))]
 
 
+-- Property which test that for a given Sudoku, there are 3*9 blocks and each of them
+-- has a length of 9 cells
+prop_IsBlocksSudokuOK :: Sudoku -> Bool
+prop_IsBlocksSudokuOK s = (length y == 3*9) && (and $ map (\x -> length x == 9) y)
+	where 
+		y = blocks s
 
-t = Sudoku
-  [ [Just 1, Just 2, Just 3], [Just 1, Just 2, Just 3] ]
+
 example = Sudoku
   [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
   , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
@@ -76,19 +95,4 @@ example = Sudoku
   , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
   , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
   , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
-  ]
-test = Sudoku
-  [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
-  , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
-  ]
-test2 = Sudoku
-  [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
-  , [Nothing]
-  , [Nothing]
-  , [Nothing]
-  , [Just 4]
-  , [Just 2]
-  , [Nothing]
-  , [Nothing]
-  , [Nothing]
   ]
