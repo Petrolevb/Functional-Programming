@@ -17,7 +17,7 @@ printLine (a:as) = do
 -- This function will convert the Maybe Int into a single char
 printCase :: Maybe Int -> Char
 printCase Nothing = '.'
-printCase (Just n) = chr n
+printCase (Just n) = head $ show n
 
 
 
