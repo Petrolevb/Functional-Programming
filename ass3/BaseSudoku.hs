@@ -37,8 +37,12 @@ isSolved s = all (notElem Nothing) (rows s)
 
 
 -- cell generates an arbitrary cell in a Sudoku
+-- 	Probability : 90% empty, 10% between 1-9
 cell :: Gen (Maybe Int)
-cell = undefined
+cell = frequency 
+ [(90, return Nothing),
+  (10, do n <- choose(1,9)
+          return (Just n))]
 
 
 -- an instance for generating Arbitrary Sudokus
@@ -47,10 +51,12 @@ instance Arbitrary Sudoku where
     do rows <- sequence [ sequence [ cell | j <- [1..9] ] | i <- [1..9] ]
        return (Sudoku rows)
 
+
+
+
+
 t = Sudoku
   [ [Just 1, Just 2, Just 3], [Just 1, Just 2, Just 3] ]
-
-example :: Sudoku
 example = Sudoku
   [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
   , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
@@ -62,14 +68,10 @@ example = Sudoku
   , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
   , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
   ]
-
-test::Sudoku
 test = Sudoku
   [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
   , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
   ]
-
-test2::Sudoku
 test2 = Sudoku
   [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
   , [Nothing]
