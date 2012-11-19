@@ -52,6 +52,8 @@ instance Arbitrary Sudoku where
        return (Sudoku rows)
 
 
+prop_Sudoku :: Sudoku -> Bool
+prop_Sudoku = isSudoku
 
 
 
