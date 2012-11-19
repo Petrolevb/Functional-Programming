@@ -19,3 +19,7 @@ printLine (a:as) = do
 printCase :: Maybe Int -> Char
 printCase Nothing = '.'
 printCase (Just n) = head $ show n
+
+
+readSudoku :: FilePath -> Sudoku
+readSudoku = undefined
