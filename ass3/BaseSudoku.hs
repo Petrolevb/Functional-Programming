@@ -20,12 +20,15 @@ where y is 9 empty arrays
 -}
 
 -- A sudoku is a 9 row by 9 column cases full of digit
---{-
 isSudoku :: Sudoku -> Bool
-isSudoku s = length (rows s) == 9 && isLength9 s
-  where isLength9 s | length (rows s) == 1 = length (head $ rows s) == 9
-        isLength9 s = length (head $ rows s) == 9 && isLength9 (Sudoku $ drop 1 (rows s))
---}
+isSudoku s = length (rows s) == 9 &&
+             isTrue (\x -> 9 == length x) s &&
+             isTrue (\x -> and $ map isBounded x) s
+  where isBounded a = a == Nothing || elem a (map Just [1..9])
+
+isTrue :: ([Maybe Int] -> Bool) -> Sudoku -> Bool
+isTrue p s | length (rows s) == 1 = p (head $ rows s)
+isTrue p s = (p (head $ rows s)) && isTrue p (Sudoku $ tail $ rows s)
 
 
 -- isSolved check if it stay some empty cases
