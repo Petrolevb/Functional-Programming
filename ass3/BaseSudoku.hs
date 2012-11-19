@@ -77,6 +77,12 @@ buildBlocks s =
 	[(concat $ (map (drop 6) (drop 6 $ rows s)))]
 
 
+
+isOkay :: Sudoku -> Bool
+isOkay s = and $ map isOkayBlock (blocks s)
+
+
+
 -- Property which test that for a given Sudoku, there are 3*9 blocks and each of them
 -- has a length of 9 cells
 prop_IsBlocksSudokuOK :: Sudoku -> Bool
