@@ -62,31 +62,31 @@ isOkayBlock (b:bs)       = b `notElem` bs && isOkayBlock bs
 
 
 blocks :: Sudoku -> [Block]
-blocks s = rows s ++ (transpose $ rows s) ++ (buildBlocks s)
+blocks s = rows s ++ transpose (rows s) ++ buildBlocks s
 
 buildBlocks :: Sudoku -> [Block]
 buildBlocks s = 
-	(concat $ (map (take 3) (take 3 $ rows s))) : 
-	(concat $ (map (take 3) (map (drop 3) (take 3 $ rows s)))) :
-	(concat $ (map (drop 6) (take 3 $ rows s))) :
-	(concat $ (map (take 3) (take 3 $ drop 3 $ rows s))) :
-	(concat $ (map (take 3) (map (drop 3) (take 3 $ drop 3 $ rows s)))) :
-	(concat $ (map (drop 6) (take 3 $ drop 3 $ rows s))) :
-	(concat $ (map (take 3) (drop 6 $ rows s))) :
-	(concat $ (map (take 3) (map (drop 3) (drop 6 $ rows s)))) :
-	[(concat $ (map (drop 6) (drop 6 $ rows s)))]
+	concatMap (take 3) (take 3 $ rows s) : 
+	concatMap (take 3) (map (drop 3) (take 3 $ rows s)) :
+	concatMap (drop 6) (take 3 $ rows s) :
+	concatMap (take 3) (take 3 $ drop 3 $ rows s) :
+	concatMap (take 3) (map (drop 3) (take 3 $ drop 3 $ rows s)) :
+	concatMap (drop 6) (take 3 $ drop 3 $ rows s) :
+	concatMap (take 3) (drop 6 $ rows s) :
+	concatMap (take 3) (map (drop 3) (drop 6 $ rows s)) :
+	[concatMap (drop 6) (drop 6 $ rows s)]
 
 
 
 isOkay :: Sudoku -> Bool
-isOkay s = and $ map isOkayBlock (blocks s)
+isOkay s = all isOkayBlock (blocks s)
 
 
 
 -- Property which test that for a given Sudoku, there are 3*9 blocks and each of them
 -- has a length of 9 cells
 prop_IsBlocksSudokuOK :: Sudoku -> Bool
-prop_IsBlocksSudokuOK s = (length y == 3*9) && (and $ map (\x -> length x == 9) y)
+prop_IsBlocksSudokuOK s = (length y == 3*9) && all (\x -> length x == 9) y
 	where 
 		y = blocks s
 
