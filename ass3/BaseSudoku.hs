@@ -52,6 +52,13 @@ instance Arbitrary Sudoku where
        return (Sudoku rows)
 
 
+type Block = [Maybe Int]
+
+isOkayBlock :: Block -> Bool
+isOkayBlock []           = True
+isOkayBlock (Nothing:bs) = isOkayBlock bs
+isOkayBlock (b:bs)       = b `notElem` bs && isOkayBlock bs
+
 prop_Sudoku :: Sudoku -> Bool
 prop_Sudoku = isSudoku
 
