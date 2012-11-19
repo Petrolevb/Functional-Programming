@@ -22,13 +22,15 @@ where y is 9 empty arrays
 -- A sudoku is a 9 row by 9 column cases full of digit
 isSudoku :: Sudoku -> Bool
 isSudoku s = length (rows s) == 9 &&
-             isTrue (\x -> 9 == length x) s &&
-             isTrue (\x -> and $ map isBounded x) s
-  where isBounded a = a == Nothing || elem a (map Just [1..9])
+             isTrue isLength9 s &&
+             isTrue isValidNumbers s
+  where isLength9      s = length s == 9
+        isValidNumbers   = all isBounded
+        isBounded      a = a `elem` (Nothing : map Just [1..9])
 
 isTrue :: ([Maybe Int] -> Bool) -> Sudoku -> Bool
 isTrue p s | length (rows s) == 1 = p (head $ rows s)
-isTrue p s = (p (head $ rows s)) && isTrue p (Sudoku $ tail $ rows s)
+isTrue p s = p (head $ rows s) && isTrue p (Sudoku $ tail $ rows s)
 
 
 -- isSolved check if it stay some empty cases
@@ -47,8 +49,7 @@ instance Arbitrary Sudoku where
     do rows <- sequence [ sequence [ cell | j <- [1..9] ] | i <- [1..9] ]
        return (Sudoku rows)
 
-t = Sudoku
-  [ [Just 1, Just 2, Just 3], [Just 1, Just 2, Just 3] ]
+
 
 example :: Sudoku
 example = Sudoku
@@ -61,23 +62,4 @@ example = Sudoku
   , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
   , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
   , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
-  ]
-
-test::Sudoku
-test = Sudoku
-  [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
-  , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
-  ]
-
-test2::Sudoku
-test2 = Sudoku
-  [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
-  , [Nothing]
-  , [Nothing]
-  , [Nothing]
-  , [Just 4]
-  , [Just 2]
-  , [Nothing]
-  , [Nothing]
-  , [Nothing]
   ]
