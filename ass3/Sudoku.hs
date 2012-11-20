@@ -1,15 +1,20 @@
-module BaseSudoku where
+module Sudoku where
+
 {-
 	Assignements Functionnal
 		Sudoku
 	BELLEC  | CHAUSSY
 	Vincent | Erwan
 -}
+
 import Test.QuickCheck
+import System.IO
+import Data.Char(digitToInt)
 import Data.List(transpose)
 
 data Sudoku = Sudoku { rows:: [[Maybe Int]] }
 	deriving (Show)
+
 
 -- Part A
 
@@ -21,6 +26,7 @@ allBlankSudoku = Sudoku [ y | x <-[1..9] ]
 This function returns 9 ys, 
 where y is 9 empty arrays
 -}
+
 
 -- A sudoku is a 9 row by 9 column cases full of digit
 isSudoku :: Sudoku -> Bool
@@ -47,6 +53,46 @@ isSolved s = all (notElem Nothing) (rows s)
 
 
 
+-- Part B
+
+-- Function to print the Sudoku
+printSudoku :: Sudoku -> IO ()
+printSudoku s = printLine $ map (map printCase) (rows s)
+
+-- Cette fonction affiche toutes les lignes d'un tableau de string
+printLine :: [String] -> IO ()
+printLine [] = return ()
+printLine (a:as) = do 
+  putStrLn a
+  printLine as
+
+-- This function will convert the Maybe Int into a single char
+printCase :: Maybe Int -> Char
+printCase Nothing = '.'
+printCase (Just n) = head $ show n
+
+
+-- Read a Sudoku from a file
+readSudoku :: FilePath -> IO Sudoku
+readSudoku fp = do
+	s <- readFile fp
+        let x = createSudoku $ lines s
+        return $ if isSudoku x then x else error "Not a Sudoku"
+
+-- Parse the string into a Sudoku
+createSudoku :: [String] -> Sudoku
+createSudoku = Sudoku . map createLine 
+-- map createLine is the equivalent for some functions
+-- which could be called "createBoard"
+  where 
+        createLine []       = []
+	createLine ('.':as) = Nothing : createLine as
+        createLine (a  :as) = (Just $ digitToInt a) : createLine as
+
+
+
+-- Part C
+
 -- cell generates an arbitrary cell in a Sudoku
 -- 	Probability : 90% empty, 10% between 1-9
 cell :: Gen (Maybe Int)
@@ -54,7 +100,6 @@ cell = frequency
  [(90, return Nothing),
   (10, do n <- choose(1,9)
           return (Just n))]
-
 
 -- an instance for generating Arbitrary Sudokus
 instance Arbitrary Sudoku where
@@ -65,9 +110,11 @@ instance Arbitrary Sudoku where
 
 -- Check whether a Sudoku is valid or not
 prop_Sudoku :: Sudoku -> Bool
-prop_Sudoku s = isSudoku s
+prop_Sudoku = isSudoku
 
 
+
+-- Part D
 
 type Block = [Maybe Int]
 
@@ -108,14 +155,5 @@ isOkay s = all isOkayBlock (blocks s)
 
 
 
-example = Sudoku
-  [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
-  , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
-  , [Nothing,Nothing,Just 9, Just 2, Nothing,Just 4, Just 7, Nothing,Nothing]
-  , [Nothing,Nothing,Nothing,Nothing,Just 1, Just 3, Nothing,Just 2, Just 8]
-  , [Just 4, Nothing,Nothing,Just 5, Nothing,Just 2, Nothing,Nothing,Just 9]
-  , [Just 2, Just 7, Nothing,Just 4, Just 6, Nothing,Nothing,Nothing,Nothing]
-  , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
-  , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
-  , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
-  ]
+-- Part E
+
