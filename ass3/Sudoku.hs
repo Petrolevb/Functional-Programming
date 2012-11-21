@@ -11,6 +11,7 @@ import Test.QuickCheck
 import System.IO
 import Data.Char(digitToInt)
 import Data.List(transpose)
+import Data.Maybe(isNothing, fromJust)
 
 data Sudoku = Sudoku { rows:: [[Maybe Int]] }
 	deriving (Show)
@@ -157,3 +158,83 @@ isOkay s = all isOkayBlock (blocks s)
 
 -- Part E
 
+type Pos = (Int,Int)
+
+-- Return a list of blank cell
+-- blanks :: Sudoku -> [Pos]
+blanks s = concatMap inRow ([0..8] `zip` map extractBlank (rows s))
+  where
+        -- Extract the index of each Nothing in each row
+        extractBlank s = map snd (filter (isNothing . fst) (s `zip` [0..8]))
+        -- Create pair of row number with column number for blank spot
+        inRow (x,[])   = []
+        inRow (x,y:ys) = (x, y) : inRow (x,ys)
+
+-- Property that states that all cells in the blanks list are actually blank.
+prop_Blanks :: Sudoku -> Bool
+prop_Blanks s = and $ mapBlanks (rows s) (blanks s)
+  where mapBlanks s = map (containNothing s)
+        containNothing s (l,r) = isNothing ((s !! l) !! r)
+
+
+-- Replace a value in a list
+(!!=) :: [a] -> (Int, a) -> [a]
+(!!=) s (i,v)  | i < 0 || i >= length s = s
+(!!=) s (i, v) = take i s ++  [v] ++ drop (i+1) s
+
+-- Property that states the length of the list is not changed
+prop_replace :: [Maybe Int] -> (Int, Maybe Int) -> Bool
+prop_replace s (i,v) = length s == length (s !!= (i,v))
+
+
+-- Update a cell in a Sudoku
+update :: Sudoku -> Pos -> Maybe Int -> Sudoku
+-- update = undefined
+update s (row, column) v | correct row column =
+                         Sudoku (
+                                take row (rows s) ++
+                                newLine ++
+                                drop (row+1) (rows s))
+                         | otherwise = s
+  where 
+        -- Check that row and column are correct
+        correct row column = 0 <= row && row < 9 && 0 <= column && column < 9
+        -- Constructs the new line
+        newLine = [rows s !! row !!= (column, v)]
+
+
+-- Property that states the cell has been updated
+prop_Update :: Sudoku -> (Int, Int) -> Maybe Int -> Property
+prop_Update s (r, c) v = r >= 0 && r < 9 && c >= 0 && c < 9 ==>
+                         rows (update s (r,c) v) !! r !! c == v
+
+
+--
+candidates :: Sudoku -> Pos -> [Int]
+candidates s (r,c) = map fromJust [x | x <- map Just [1..9],
+                                   x `notElem` line &&
+                                   x `notElem` column &&
+                                   x `notElem` block]
+  where x = blocks s
+        line = x !! r
+        column = x !! (9+c)
+        block = x !! (18 + (c `div`3) + (3 * (r `div` 3)))
+
+
+
+
+-- Example to remove before the end
+ex =
+    Sudoku
+      [ [Just 3 , Just 6 , Nothing,   Nothing, Just 7 , Just 1 ,   Just 2 , Nothing, Nothing]
+      , [Nothing, Just 5 , Nothing,   Nothing, Nothing, Nothing,   Just 1 , Just 8 , Nothing]
+      , [Nothing, Nothing, Just 9 ,   Just 2 , Nothing, Just 4 ,   Just 7 , Nothing, Nothing]
+
+      , [Nothing, Nothing, Nothing,   Nothing, Just 1 , Just 3 ,   Nothing, Just 2 , Just 8 ]
+      , [Just 4 , Nothing, Nothing,   Just 5 , Nothing, Just 2 ,   Nothing, Nothing, Just 9 ]
+      , [Just 2 , Just 7 , Nothing,   Just 4 , Just 6 , Nothing,   Nothing, Nothing, Nothing]
+
+      , [Nothing, Nothing, Just 5 ,   Just 3 , Nothing, Just 8 ,   Just 9 , Nothing, Nothing]
+      , [Nothing, Just 8 , Just 3 ,   Nothing, Nothing, Nothing,   Nothing, Just 6 , Nothing]
+      , [Nothing, Nothing, Just 7 ,   Just 6 , Just 9 , Nothing,   Nothing, Just 4 , Just 3 ]
+      ]
