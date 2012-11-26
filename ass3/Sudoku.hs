@@ -160,6 +160,7 @@ isOkay s = all isOkayBlock (blocks s)
 
 type Pos = (Int,Int)
 
+
 -- Return a list of blank cell
 -- blanks :: Sudoku -> [Pos]
 blanks s = concatMap inRow ([0..8] `zip` map extractBlank (rows s))
@@ -204,12 +205,21 @@ update s (row, column) v | correct row column =
 
 
 -- Property that states the cell has been updated
-prop_Update :: Sudoku -> (Int, Int) -> Maybe Int -> Property
-prop_Update s (r, c) v = r >= 0 && r < 9 && c >= 0 && c < 9 ==>
-                         rows (update s (r,c) v) !! r !! c == v
+gPos :: Gen Pos
+gPos = do 
+            x <- choose(0,8)
+            y <- choose(0,8)
+            return (x,y)
+
+prop_Update :: Sudoku -> Pos -> Maybe Int -> Property
+prop_Update s pos v = forAll gPos $
+                  \p -> prop_Up s p v
+
+prop_Up :: Sudoku -> Pos -> Maybe Int -> Bool
+prop_Up s (r, c) v = rows (update s (r,c) v) !! r !! c == v
 
 
---
+-- Create a list of all possible solutions for a position
 candidates :: Sudoku -> Pos -> [Int]
 candidates s (r,c) = map fromJust [x | x <- map Just [1..9],
                                    x `notElem` line &&
@@ -221,6 +231,16 @@ candidates s (r,c) = map fromJust [x | x <- map Just [1..9],
         block = x !! (18 + (c `div`3) + (3 * (r `div` 3)))
 
 
+-- Property
+prop_Possible_value s = forAll gPos $
+                        \p -> prop_Candidate s p
+
+prop_Candidate :: Sudoku -> Pos -> Property
+prop_Candidate s pos = isOkay s ==>
+                 all (up s pos) values
+  where values = map Just (candidates s pos)
+        up s pos value = isOkay (tmpSudoku value)
+        tmpSudoku = update s pos
 
 
 -- Example to remove before the end
