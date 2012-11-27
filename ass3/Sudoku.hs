@@ -248,7 +248,7 @@ prop_Candidate s pos = isOkay s ==>
 
 -- Try another version of solve
 resolve :: Sudoku -> Maybe Sudoku
-resolve s = if (length $ getEasyCandidate s) == 0 
+resolve s = if  null (getEasyCandidate s) 
 	    then Nothing 
 	    else solve $ updatePositions s (getEasyCandidate s)
 
@@ -260,7 +260,7 @@ updatePositions s ((p, n):ls) = updatePositions (update s p (Just n)) ls
 getEasyCandidate :: Sudoku -> [(Pos, Int)]
 getEasyCandidate s = removeNotEasy (map (\(a,b) -> (a, length b, b)) (getPosCandidate s))
 	where removeNotEasy [] = []
-	      removeNotEasy ( (p , n, (a:as)) : ss ) | n == 1    = (p, a) : removeNotEasy ss
+	      removeNotEasy ( (p , n, a:as) : ss ) | n == 1    = (p, a) : removeNotEasy ss
 	           			             | otherwise = removeNotEasy ss
 	      getPosCandidate s = makePair (blanks s) (map (candidates s) (blanks s))
 
