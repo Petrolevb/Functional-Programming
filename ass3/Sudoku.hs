@@ -245,6 +245,31 @@ prop_Candidate s pos = isOkay s ==>
         tmpSudoku = update s pos
 
 
+
+-- Try another version of solve
+resolve :: Sudoku -> Maybe Sudoku
+resolve s = if (length $ getEasyCandidate s) == 0 
+	    then Nothing 
+	    else solve $ updatePositions s (getEasyCandidate s)
+
+updatePositions :: Sudoku -> [(Pos, Int)] -> Sudoku
+updatePositions s [] = s
+updatePositions s ((p, n):ls) = updatePositions (update s p (Just n)) ls
+
+-- get a list of pairs of position with only one corresponding candidate
+getEasyCandidate :: Sudoku -> [(Pos, Int)]
+getEasyCandidate s = removeNotEasy (map (\(a,b) -> (a, length b, b)) (getPosCandidate s))
+	where removeNotEasy [] = []
+	      removeNotEasy ( (p , n, (a:as)) : ss ) | n == 1    = (p, a) : removeNotEasy ss
+	           			             | otherwise = removeNotEasy ss
+	      getPosCandidate s = makePair (blanks s) (map (candidates s) (blanks s))
+
+
+makePair :: [a] -> [b] -> [(a,b)]
+makePair [] [] = []
+makePair (a:as) (b:bs) = (a,b) : makePair as bs
+
+
 -- Solve a given Sudoku
 solve :: Sudoku -> Maybe Sudoku
 solve s | not(isSudoku s && isOkay s) = Nothing
@@ -252,8 +277,9 @@ solve s = solve' s
 
 solve' :: Sudoku -> Maybe Sudoku
 solve' sud | null $ blanks sud = Just sud
-solve' sud = testPosition blankPos sud
-  where blankPos = blanks sud
+solve' sud = resolve sud
+--solve' sud = testPosition blankPos sud
+--where blankPos = blanks sud
         
         
 
