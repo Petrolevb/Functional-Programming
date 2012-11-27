@@ -10,7 +10,7 @@ module Sudoku where
 import Test.QuickCheck
 import System.IO
 import Data.Char(digitToInt)
-import Data.List(transpose)
+import Data.List(transpose, isInfixOf)
 import Data.Maybe(isNothing, fromJust)
 
 data Sudoku = Sudoku { rows:: [[Maybe Int]] }
@@ -246,81 +246,88 @@ prop_Candidate s pos = isOkay s ==>
 
 
 -- Solve a given Sudoku
+
+{-
+   We have a problem when we try to use solve'' with allBlankSudoku.
+   Apparently the program is stuck in an infinite loop
+   and we do not know why at this moment.
+   Then from small test i have done, we can only resolve
+   "easy1.sud" and the example
+-}
 solve :: Sudoku -> Maybe Sudoku
-solve s | not(isSudoku s && isOkay s) = Nothing
-solve s = solve' s
+solve s = test s 50
+
+test :: Sudoku -> Int -> Maybe Sudoku
+test s i | i == 0 = Just s
+         | otherwise = test (fromJust $ solve'' s) (i-1)
+
+-- Original solve function
+solve'' :: Sudoku -> Maybe Sudoku
+solve'' s | not(isSudoku s && isOkay s) = Nothing
+solve'' s = solve' s
 
 solve' :: Sudoku -> Maybe Sudoku
 solve' sud | null $ blanks sud = Just sud
-solve' sud = testPosition blankPos sud
-  where blankPos = blanks sud
-        
-        
+solve' sud = if isNothing (resolve sud) then tryValue else resolve sud
+  where tryValue = fixValue tmpSud listPosValue
+        tmpSud = updatePositions sud (getEasyCandidate sud)
+        listPosValue = concatMap (getCandidate sud) [2..9]
 
-testPosition [] sud = if isOkay sud then Just sud else Nothing
-testPosition (p:ps) sud | isNothing (testValue p (values p) sud) = testPosition ps sud
-                        | otherwise = solve ( fromJust (testValue p (values p) sud))
-  where values = candidates sud
+-- Fix a value and try to solve the new sudoku
+fixValue :: Sudoku -> [(Pos, [Int])] -> Maybe Sudoku
+fixValue sud [] = Just sud
+fixValue sud ((p, a:as):ss) = Just (update sud p (Just a))
+{-
+   In the last line, when we replace Just by solve''
+   we have a problem for solving allBlankSudoku in an infinite loop.
+   We do not understand why at this moment
+-}
 
-testValue :: Pos -> [Int] -> Sudoku -> Maybe Sudoku
-testValue pos [] sud = if isOkay sud then Just sud else Nothing
-testValue pos (v:vs) sud | isNothing (solve tmpSud) = testValue pos vs sud
-                         | otherwise = solve tmpSud
-  where tmpSud = update sud pos (Just v)
+-- Solve the sudoku when there is obvious results for cells
+resolve :: Sudoku -> Maybe Sudoku
+resolve s = if  null (getEasyCandidate s) 
+	    then Nothing 
+	    else solve $ updatePositions s (getEasyCandidate s)
 
- {-
-solve' sud = testValue blankPos
-  where blankPos = blanks sud
-        testValue (p:ps) | isNothing (tmpSudoku p) = testValue ps
-                         | otherwise = (tmpSudoku p)
-        tmpSudoku p = upValue p (candidates sud p)
-        update pos []      = Nothing
-        upValue pos (v:vs) = solve (update sud pos (Just v))
- -}
+-- Update the value of different positions
+updatePositions :: Sudoku -> [(Pos, Int)] -> Sudoku
+updatePositions s [] = s
+updatePositions s ((p, n):ls) = updatePositions (update s p (Just n)) ls
+
+-- get a list of pairs of position with 'size' corresponding candidate
+getCandidate :: Sudoku -> Int -> [(Pos, [Int])]
+getCandidate s size = removeNotEasy (map (\(a,b) -> (a, length b, b))
+                                   (getPosCandidate s))
+  where removeNotEasy [] = []
+        removeNotEasy ( (p , n, a) : ss ) | n == size
+                                               = (p, a) : removeNotEasy ss
+	           			     | otherwise = removeNotEasy ss
+	getPosCandidate s = zip (blanks s) (map (candidates s) (blanks s))
+
+-- get a list of pairs of position with only one corresponding candidate
+getEasyCandidate :: Sudoku -> [(Pos, Int)]
+getEasyCandidate s = clear $ getCandidate s 1
+  where 
+        clear [] = []
+        clear ((pos, a:as):ss) = (pos, a) : clear ss
 
 
--- Example to remove before the end
-ex =
-    Sudoku
-      [ [Just 3 , Just 6 , Nothing,   Nothing, Just 7 , Just 1 ,   Just 2 , Nothing, Nothing]
-      , [Nothing, Just 5 , Nothing,   Nothing, Nothing, Nothing,   Just 1 , Just 8 , Nothing]
-      , [Nothing, Nothing, Just 9 ,   Just 2 , Nothing, Just 4 ,   Just 7 , Nothing, Nothing]
+-- Read and solve a sudoku from a file
+readAndSolve :: FilePath -> IO ()
+readAndSolve path = do
+                     sud <- readSudoku path
+                     let result = solve sud
+                     printSudoku $ fromJust result
 
-      , [Nothing, Nothing, Nothing,   Nothing, Just 1 , Just 3 ,   Nothing, Just 2 , Just 8 ]
-      , [Just 4 , Nothing, Nothing,   Just 5 , Nothing, Just 2 ,   Nothing, Nothing, Just 9 ]
-      , [Just 2 , Just 7 , Nothing,   Just 4 , Just 6 , Nothing,   Nothing, Nothing, Nothing]
 
-      , [Nothing, Nothing, Just 5 ,   Just 3 , Nothing, Just 8 ,   Just 9 , Nothing, Nothing]
-      , [Nothing, Just 8 , Just 3 ,   Nothing, Nothing, Nothing,   Nothing, Just 6 , Nothing]
-      , [Nothing, Nothing, Just 7 ,   Just 6 , Just 9 , Nothing,   Nothing, Just 4 , Just 3 ]
-      ]
+-- State if a sudoku is a solution of another sudoku
+isSolutionOf :: Sudoku -> Sudoku -> Bool
+isSolutionOf s1 s2 | isOkay s1 && null (blanks s1)
+                     = rows s1 `isInfixOf` rows s2
+                   | otherwise = False
 
-easy =
-     Sudoku
-       [ [Nothing, Nothing, Just 3 ,   Nothing, Just 2 , Nothing,   Just 6 , Nothing, Nothing]
-       , [Just 9 , Nothing, Nothing,   Just 3 , Nothing, Just 5 ,   Nothing, Nothing, Just 1 ]
-       , [Nothing, Nothing, Just 1 ,   Just 8 , Nothing, Just 6 ,   Just 4 , Nothing, Nothing]
 
-       , [Nothing, Nothing, Just 8 ,   Just 1 , Nothing, Just 2 ,   Just 9 , Nothing, Nothing]
-       , [Just 7 , Nothing, Nothing,   Nothing, Nothing, Nothing,   Nothing, Nothing, Just 8 ]
-       , [Nothing, Nothing, Just 6 ,   Just 7 , Nothing, Just 8 ,   Just 2 , Nothing, Nothing]
-
-       , [Nothing, Nothing, Just 2 ,   Just 6 , Nothing, Just 9 ,   Just 5 , Nothing, Nothing]
-       , [Just 8 , Nothing, Nothing,   Just 2 , Nothing, Just 3 ,   Nothing, Nothing, Just 9 ]
-       , [Nothing, Nothing, Just 5 ,   Nothing, Just 1 , Nothing,   Just 3 , Nothing, Nothing]
-       ]
-
-fini =
-    Sudoku
-      [ [Just 3 , Just 6 , Nothing,   Nothing, Just 7 , Just 1 ,   Just 2 , Nothing, Nothing]
-      , [Nothing, Just 5 , Just 2 ,   Just 9 , Nothing, Just 6 ,   Just 1 , Just 8 , Just 4 ]
-      , [Just 8 , Just 1 , Just 9 ,   Just 2 , Just 5 , Just 4 ,   Just 7 , Just 3 , Just 6 ]
-
-      , [Just 5 , Just 9 , Just 6 ,   Just 7 , Just 1 , Just 3 ,   Just 4 , Just 2 , Just 8 ]
-      , [Just 4 , Just 3 , Just 1 ,   Just 5 , Just 8 , Just 2 ,   Just 6 , Just 7 , Just 9 ]
-      , [Just 2 , Just 7 , Just 8 ,   Just 4 , Just 6 , Just 9 ,   Just 3 , Just 5 , Just 1 ]
-
-      , [Just 6 , Just 4 , Just 5 ,   Just 3 , Just 2 , Just 8 ,   Just 9 , Just 1 , Just 7 ]
-      , [Just 9 , Just 8 , Just 3 ,   Just 1 , Just 4 , Just 7 ,   Just 5 , Just 6 , Just 2 ]
-      , [Just 1 , Just 2 , Just 7 ,   Just 6 , Just 9 , Just 5 ,   Just 8 , Just 4 , Just 3 ]
-      ]
+-- Property that states the soundness of the function solve
+prop_SolveSound :: Sudoku -> Property
+prop_SolveSound s = isOkay s ==>
+                    fromJust (solve s) `isSolutionOf` fromJust (solve s)
