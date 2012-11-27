@@ -162,7 +162,7 @@ type Pos = (Int,Int)
 
 
 -- Return a list of blank cell
--- blanks :: Sudoku -> [Pos]
+blanks :: Sudoku -> [Pos]
 blanks s = concatMap inRow ([0..8] `zip` map extractBlank (rows s))
   where
         -- Extract the index of each Nothing in each row
@@ -190,7 +190,6 @@ prop_replace s (i,v) = length s == length (s !!= (i,v))
 
 -- Update a cell in a Sudoku
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
--- update = undefined
 update s (row, column) v | correct row column =
                          Sudoku (
                                 take row (rows s) ++
@@ -205,15 +204,18 @@ update s (row, column) v | correct row column =
 
 
 -- Property that states the cell has been updated
+-- Generate positions
 gPos :: Gen Pos
 gPos = do 
             x <- choose(0,8)
             y <- choose(0,8)
             return (x,y)
 
+-- Porperty to use with QuickCheck
 prop_Update :: Sudoku -> Pos -> Maybe Int -> Property
 prop_Update s pos v = forAll gPos $
                   \p -> prop_Up s p v
+
 
 prop_Up :: Sudoku -> Pos -> Maybe Int -> Bool
 prop_Up s (r, c) v = rows (update s (r,c) v) !! r !! c == v
@@ -231,7 +233,7 @@ candidates s (r,c) = map fromJust [x | x <- map Just [1..9],
         block = x !! (18 + (c `div`3) + (3 * (r `div` 3)))
 
 
--- Property
+-- Property that try if the possible values produce a valid Sudoku
 prop_Possible_value s = forAll gPos $
                         \p -> prop_Candidate s p
 
@@ -241,6 +243,40 @@ prop_Candidate s pos = isOkay s ==>
   where values = map Just (candidates s pos)
         up s pos value = isOkay (tmpSudoku value)
         tmpSudoku = update s pos
+
+
+-- Solve a given Sudoku
+solve :: Sudoku -> Maybe Sudoku
+solve s | not(isSudoku s && isOkay s) = Nothing
+solve s = solve' s
+
+solve' :: Sudoku -> Maybe Sudoku
+solve' sud | null $ blanks sud = Just sud
+solve' sud = testPosition blankPos sud
+  where blankPos = blanks sud
+        
+        
+
+testPosition [] sud = if isOkay sud then Just sud else Nothing
+testPosition (p:ps) sud | isNothing (testValue p (values p) sud) = testPosition ps sud
+                        | otherwise = testValue p (values p) sud
+  where values = candidates sud
+
+testValue :: Pos -> [Int] -> Sudoku -> Maybe Sudoku
+testValue pos [] sud = if isOkay sud then Just sud else Nothing
+testValue pos (v:vs) sud | isNothing (solve tmpSud) = testValue pos vs sud
+                         | otherwise = Just tmpSud
+  where tmpSud = update sud pos (Just v)
+
+ {-
+solve' sud = testValue blankPos
+  where blankPos = blanks sud
+        testValue (p:ps) | isNothing (tmpSudoku p) = testValue ps
+                         | otherwise = (tmpSudoku p)
+        tmpSudoku p = upValue p (candidates sud p)
+        update pos []      = Nothing
+        upValue pos (v:vs) = solve (update sud pos (Just v))
+ -}
 
 
 -- Example to remove before the end
