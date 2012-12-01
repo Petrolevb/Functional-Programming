@@ -247,6 +247,85 @@ prop_Candidate s pos = isOkay s ==>
 
 -- Solve a given Sudoku
 
+solve :: Sudoku -> Maybe Sudoku
+solve s | not(isSudoku s && isOkay s) = Nothing
+solve s = solve' s
+
+solve' :: Sudoku -> Maybe Sudoku
+solve' s = tryPositions s (blanks s)
+
+tryPositions :: Sudoku -> [Pos] -> Maybe Sudoku
+tryPositions s [] = Just s
+tryPositions s (p:ps) = tryValues s p values
+  where values = candidates s p
+
+tryValues :: Sudoku -> Pos -> [Int] -> Maybe Sudoku
+tryValues s p [] = Nothing
+tryValues s p (v:vs) | isNothing (solve' updateSud) = tryValues s p vs
+                     | otherwise = solve' updateSud
+  where updateSud = update s p (Just v)
+
+
+-- read and solve a sudoku from a file
+readAndSolve :: FilePath -> IO ()
+readAndSolve path = do
+                     sud <- readSudoku path
+                     let result = solve sud
+                     printSudoku $ fromJust result
+
+
+-- State if a sudoku is a solution of another sudoku
+isSolutionOf :: Sudoku -> Sudoku -> Bool
+isSolutionOf s1 s2 | isOkay s1 && null (blanks s1)
+                     = rows s1 `isInfixOf` rows s2
+                   | otherwise = False
+
+
+-- Property that states the soundness of the function solve
+prop_SolveSound :: Sudoku -> Property
+prop_SolveSound s = isOkay s ==>
+                    fromJust (solve s) `isSolutionOf` fromJust (solve s)
+
+
+
+
+ex = Sudoku
+   [ [Just 3, Just 6, Nothing, Nothing, Just 7, Just 1, Just 2, Nothing, Nothing]
+  , [Nothing, Just 5, Nothing, Nothing, Nothing, Nothing ,Just 1, Just 8, Nothing]
+  , [Nothing, Nothing, Just 9, Just 2, Nothing, Just 4, Just 7, Nothing, Nothing]
+  , [Nothing, Nothing, Nothing, Nothing, Just 1, Just 3, Nothing, Just 2, Just 8]
+  , [Just 4, Nothing, Nothing,Just 5, Nothing, Just 2, Nothing, Nothing, Just 9]
+  , [Just 2, Just 7, Nothing, Just 4, Just 6, Nothing, Nothing, Nothing, Nothing]
+  , [Nothing, Nothing, Just 5, Just 3, Nothing, Just 8, Just 9, Nothing, Nothing]
+  , [Nothing, Just 8, Just 3, Nothing, Nothing, Nothing, Nothing, Just 6, Nothing]
+  , [Nothing, Nothing, Just 7, Just 6, Just 9, Nothing, Nothing, Just 4, Just 3]
+  ]
+
+solved = Sudoku
+  [ [Just 3, Just 6, Just 4, Just 8, Just 7, Just 1, Just 2, Just 9, Just 5]
+  , [Just 7, Just 5, Just 2, Just 9, Just 3, Just 6 ,Just 1, Just 8, Just 4]
+  , [Just 8, Just 1, Just 9, Just 2, Just 5, Just 4, Just 7, Just 3, Just 6]
+  , [Just 5, Just 9, Just 6, Just 7, Just 1, Just 3, Just 4, Just 2, Just 8]
+  , [Just 4, Just 3, Just 1, Just 5, Just 8, Just 2, Just 6, Just 7, Just 9]
+  , [Just 2, Just 7, Just 8, Just 4, Just 6, Just 9, Just 3, Just 5, Just 1]
+  , [Just 6, Just 4, Just 5, Just 3, Just 2, Just 8, Just 9, Just 1, Just 7]
+  , [Just 9, Just 8, Just 3, Just 1, Just 4, Just 7, Just 5, Just 6, Just 2]
+  , [Just 1, Just 2, Just 7, Just 6, Just 9, Just 5, Just 8, Just 4, Just 3]
+  ]
+
+test = Sudoku
+  [ [Just 3, Nothing, Just 4, Just 8, Nothing, Just 1, Just 2, Just 9, Just 5]
+  , [Just 7, Just 5, Just 2, Just 9, Just 3, Just 6 ,Just 1, Just 8, Just 4]
+  , [Just 8, Just 1, Just 9, Just 2, Just 5, Just 4, Just 7, Just 3, Just 6]
+  , [Just 5, Just 9, Nothing, Just 7, Just 1, Just 3, Just 4, Just 2, Just 8]
+  , [Just 4, Just 3, Just 1, Just 5, Just 8, Just 2, Just 6, Just 7, Just 9]
+  , [Just 2, Nothing, Just 8, Nothing, Nothing, Just 9, Just 3, Just 5, Just 1]
+  , [Just 6, Just 4, Just 5, Just 3, Just 2, Just 8, Just 9, Just 1, Just 7]
+  , [Just 9, Just 8, Just 3, Just 1, Just 4, Just 7, Nothing, Just 6, Just 2]
+  , [Just 1, Just 2, Just 7, Just 6, Just 9, Just 5, Just 8, Just 4, Just 3]
+  ]
+
+--------------------------
 {-
    We have a problem when we try to use solve'' with allBlankSudoku.
    Apparently the program is stuck in an infinite loop
@@ -254,6 +333,7 @@ prop_Candidate s pos = isOkay s ==>
    Then from small test i have done, we can only resolve
    "easy1.sud" and the example
 -}
+{-
 solve :: Sudoku -> Maybe Sudoku
 solve s = test s 50
 
@@ -310,24 +390,4 @@ getEasyCandidate s = clear $ getCandidate s 1
   where 
         clear [] = []
         clear ((pos, a:as):ss) = (pos, a) : clear ss
-
-
--- Read and solve a sudoku from a file
-readAndSolve :: FilePath -> IO ()
-readAndSolve path = do
-                     sud <- readSudoku path
-                     let result = solve sud
-                     printSudoku $ fromJust result
-
-
--- State if a sudoku is a solution of another sudoku
-isSolutionOf :: Sudoku -> Sudoku -> Bool
-isSolutionOf s1 s2 | isOkay s1 && null (blanks s1)
-                     = rows s1 `isInfixOf` rows s2
-                   | otherwise = False
-
-
--- Property that states the soundness of the function solve
-prop_SolveSound :: Sudoku -> Property
-prop_SolveSound s = isOkay s ==>
-                    fromJust (solve s) `isSolutionOf` fromJust (solve s)
+-}
