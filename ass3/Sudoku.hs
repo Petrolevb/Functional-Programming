@@ -246,7 +246,6 @@ prop_Candidate s pos = isOkay s ==>
 
 
 -- Solve a given Sudoku
-
 solve :: Sudoku -> Maybe Sudoku
 solve s | not(isSudoku s && isOkay s) = Nothing
 solve s = solve' s
@@ -254,11 +253,13 @@ solve s = solve' s
 solve' :: Sudoku -> Maybe Sudoku
 solve' s = tryPositions s (blanks s)
 
+-- Try the first blank position
 tryPositions :: Sudoku -> [Pos] -> Maybe Sudoku
 tryPositions s [] = Just s
 tryPositions s (p:ps) = tryValues s p values
   where values = candidates s p
 
+-- Try the first value for a geven position
 tryValues :: Sudoku -> Pos -> [Int] -> Maybe Sudoku
 tryValues s p [] = Nothing
 tryValues s p (v:vs) = case solve' updateSud of
