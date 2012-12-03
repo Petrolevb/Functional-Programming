@@ -261,8 +261,9 @@ tryPositions s (p:ps) = tryValues s p values
 
 tryValues :: Sudoku -> Pos -> [Int] -> Maybe Sudoku
 tryValues s p [] = Nothing
-tryValues s p (v:vs) | isNothing (solve' updateSud) = tryValues s p vs
-                     | otherwise = solve' updateSud
+tryValues s p (v:vs) = case solve' updateSud of
+                            Nothing  -> tryValues s p vs
+                            Just sol -> Just sol
   where updateSud = update s p (Just v)
 
 
