@@ -279,15 +279,19 @@ readAndSolve path = do
 -- State if a sudoku is a solution of another sudoku
 isSolutionOf :: Sudoku -> Sudoku -> Bool
 isSolutionOf s1 s2 | isOkay s1 && null (blanks s1)
-                     = rows s1 `isInfixOf` rows s2
+                     = and $ inRows (rows s1) (rows s2)
                    | otherwise = False
+  where inRows [] []              = [True]
+        inRows (s1:s1s) (s2:s2s)  = (and $ inLines s1 s2) : inRows s1s s2s
+        inLines [] []             = [True]
+        inLines (s1:s1s) (s2:s2s) = (isNothing s2 || s1 == s2)
+                                    : inLines s1s s2s
 
 
 -- Property that states the soundness of the function solve
 prop_SolveSound :: Sudoku -> Property
 prop_SolveSound s = isOkay s ==>
-                    fromJust (solve s) `isSolutionOf` fromJust (solve s)
-
+                    fromJust (solve s) `isSolutionOf` s
 
 
 
