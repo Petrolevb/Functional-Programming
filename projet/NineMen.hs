@@ -64,7 +64,7 @@ data Case = Case Token | Empty
 type Movement = [Int]
 
 newBoard :: Board 
-newBoard = Board [(Empty, (movementAllow x)) | x <- [0..23]]
+newBoard = Board [(Empty, movementAllow x) | x <- [0..23]]
 
 -- The database is build such as the positions allowed are sorted
 movementAllow :: Int -> Movement
@@ -106,7 +106,7 @@ isCaseFree b i = let (target, _) = line b !! i in target == Empty
 
 -- Transform the case targeted (for exemple, replace a red token by an empty case)
 changeCase :: Board -> Int -> Case -> Board
-changeCase b i c = Board (take i (line b) ++ [(c, (movementAllow i))] ++ drop (i+1) (line b))
+changeCase b i c = Board (take i (line b) ++ [(c, movementAllow i)] ++ drop (i+1) (line b))
 
 deplacement :: Board -> Int -> Int -> Maybe Board
 deplacement b i1 i2 | not $ isMovementAllowed b i1 i2 = Nothing
@@ -120,32 +120,32 @@ deplacement b i1 i2 | not $ isMovementAllowed b i1 i2 = Nothing
 --      a player can not move
 isFinish :: Board -> Bool
 isFinish b = (numberToken b Red < 3) || (numberToken b Black < 3) ||
-             (and $ map (canMove b) (positionToken b Red))        ||
-             (and $ map (canMove b) (positionToken b Black))
+             all (canMove b) (positionToken b Red)                ||
+             all (canMove b) (positionToken b Black)
 
 numberToken :: Board -> Token -> Int
 numberToken b t = count (line b) t
     where 
         count [] _                         = 0
-        count ((c, _):s) t | (Case t) == c = 1 + count s t
+        count ((c, _):s) t | Case t == c = 1 + count s t
                            | otherwise     = count s t
 
 -- Say If the position targeted can move
 canMove :: Board -> Int -> Bool
-canMove b i = (length $ movements b i) /= 0
+canMove b i = length ( movements b i) /= 0
 
 -- Given a position, return the possible movements
 movements :: Board -> Int -> Movement
 movements b i = let (tok, pos) = line b !! i in
                  if tok == Empty then [] else
-                 concatMap (\(bool, to) -> if bool then [to] else []) (zip (map (\p -> isMovementAllowed b i p) pos) pos)
+                 concatMap (\(bool, to) -> [to | bool]) (zip (map (isMovementAllowed b i) pos) pos)
 
 -- Return all posistions for a given token
 positionToken :: Board -> Token -> [Int]
 positionToken b t = addPos 0 (line b) t
         where addPos _ []         _ = []
-              addPos i ((c, _):s) t | (Case t) == c = i : addPos (i+1) s t
-                                    | otherwise     = addPos (i+1) s t
+              addPos i ((c, _):s) t | Case t == c = i : addPos (i+1) s t
+                                    | otherwise   = addPos (i+1) s t
 
 test = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
 test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)
