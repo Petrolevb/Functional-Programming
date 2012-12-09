@@ -246,7 +246,6 @@ prop_Candidate s pos = isOkay s ==>
 
 
 -- Solve a given Sudoku
-
 solve :: Sudoku -> Maybe Sudoku
 solve s | not(isSudoku s && isOkay s) = Nothing
 solve s = solve' s
@@ -254,15 +253,18 @@ solve s = solve' s
 solve' :: Sudoku -> Maybe Sudoku
 solve' s = tryPositions s (blanks s)
 
+-- Try the first blank position
 tryPositions :: Sudoku -> [Pos] -> Maybe Sudoku
 tryPositions s [] = Just s
 tryPositions s (p:ps) = tryValues s p values
   where values = candidates s p
 
+-- Try the first value for a geven position
 tryValues :: Sudoku -> Pos -> [Int] -> Maybe Sudoku
 tryValues s p [] = Nothing
-tryValues s p (v:vs) | isNothing (solve' updateSud) = tryValues s p vs
-                     | otherwise = solve' updateSud
+tryValues s p (v:vs) = case solve' updateSud of
+                            Nothing  -> tryValues s p vs
+                            Just sol -> Just sol
   where updateSud = update s p (Just v)
 
 
@@ -277,15 +279,19 @@ readAndSolve path = do
 -- State if a sudoku is a solution of another sudoku
 isSolutionOf :: Sudoku -> Sudoku -> Bool
 isSolutionOf s1 s2 | isOkay s1 && null (blanks s1)
-                     = rows s1 `isInfixOf` rows s2
+                     = and $ inRows (rows s1) (rows s2)
                    | otherwise = False
+  where inRows [] []              = [True]
+        inRows (s1:s1s) (s2:s2s)  = (and $ inLines s1 s2) : inRows s1s s2s
+        inLines [] []             = [True]
+        inLines (s1:s1s) (s2:s2s) = (isNothing s2 || s1 == s2)
+                                    : inLines s1s s2s
 
 
 -- Property that states the soundness of the function solve
 prop_SolveSound :: Sudoku -> Property
 prop_SolveSound s = isOkay s ==>
-                    fromJust (solve s) `isSolutionOf` fromJust (solve s)
-
+                    fromJust (solve s) `isSolutionOf` s
 
 
 
