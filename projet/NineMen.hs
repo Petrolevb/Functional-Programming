@@ -58,7 +58,7 @@ data Board = Board { line ::[(Case, Movement)] }
 data Token = Red | Black
     deriving (Show, Eq)
 
-data Case = Token | Empty
+data Case = Case Token | Empty
     deriving (Show, Eq)
 
 type Movement = [Int]
@@ -99,8 +99,11 @@ movementAllow 24 = 15:23:[]
 isMovementAllowed :: Board -> Int -> Int -> Bool
 isMovementAllowed b from to = let (_, pos) = line b !! from in
                                 to `elem` pos && isCaseFree b to
-
 isCaseFree :: Board -> Int -> Bool
 isCaseFree b i = let (target, _) = line b !! i in target == Empty
 
+
+-- Transform the case targeted (for exemple, replace a red token by an empty case)
+changeCase :: Board -> Int -> Case -> Board
+changeCase b i c = Board (take (i-1) (line b) ++ [(c, (movementAllow i))] ++ drop i (line b))
 
