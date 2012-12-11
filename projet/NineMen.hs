@@ -111,10 +111,6 @@ positionToken b t = addPos 0 (line b) t
               addPos i ((c, _):s) t | Case t == c = i : addPos (i+1) s t
                                     | otherwise   = addPos (i+1) s t
 
-test = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
-test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)
-
-
 -- Return the token at the position given
 tokenAt :: Board -> Int ->  Maybe Token
 tokenAt b i = let (t, _) = line b !! i in
@@ -169,3 +165,9 @@ getTuplet _ [] = []
 getTuplet b (i:is) = let (c, _) = (line b !! i) in
                         c : getTuplet b is
 
+
+removeToken :: Board -> Int -> Maybe Board
+removeToken b i | isAlign b i = Nothing
+                | otherwise   = changeCase b i Empty
+test = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
+test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)
