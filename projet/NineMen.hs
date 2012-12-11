@@ -115,13 +115,19 @@ deplacement b i1 i2 | not $ isMovementAllowed b i1 i2 = Nothing
                         Just $ changeCase (changeCase b i2 tok) i1 Empty
 
 
--- Return if someone win : 
+-- Return if the board is finish: 
 --      one player have less than three token or
 --      a player can not move
 isFinish :: Board -> Bool
-isFinish b = (numberToken b Red < 3) || (numberToken b Black < 3) ||
-             all (canMove b) (positionToken b Red)                ||
-             all (canMove b) (positionToken b Black)
+isFinish b = (numberToken b Red < 3) || (numberToken b Black < 3)   ||
+            -- if there is no token able to move
+             (not $ or $ map (canMove b) (positionToken b Red))     ||
+             (not $ or $ map (canMove b) (positionToken b Black))
+
+winner :: Board -> Maybe Token
+winner b | not $ isFinish b                                                              = Nothing
+         | (numberToken b Red < 3) || (not $ or $ map (canMove b) (positionToken b Red)) = Just Black
+         | otherwise                                                                     = Just Red
 
 numberToken :: Board -> Token -> Int
 numberToken b t = count (line b) t
