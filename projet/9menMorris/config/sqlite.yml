@@ -1,0 +1,20 @@
+Default: &defaults
+  database: 9menMorris.sqlite3
+  poolsize: 10
+
+Development:
+  <<: *defaults
+
+Testing:
+  database: 9menMorris_test.sqlite3
+  <<: *defaults
+
+Staging:
+  database: 9menMorris_staging.sqlite3
+  poolsize: 100
+  <<: *defaults
+
+Production:
+  database: 9menMorris_production.sqlite3
+  poolsize: 100
+  <<: *defaults

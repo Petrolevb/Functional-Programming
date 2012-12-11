@@ -68,30 +68,30 @@ newBoard = Board [(Empty, movementAllow x) | x <- [0..23]]
 
 -- The database is build such as the positions allowed are sorted
 movementAllow :: Int -> Movement
-movementAllow  0 = 1:09:[]
-movementAllow  1 = 0:2:4:[]  
-movementAllow  2 = 1:14:[]  
-movementAllow  3 = 4:10:[]  
-movementAllow  4 = 1:3:5:7:[]  
-movementAllow  5 = 4:13:[]  
-movementAllow  6 = 7:11:[]  
-movementAllow  7 = 4:6:8:[]  
-movementAllow  8 = 7:12:[]  
-movementAllow  9 = 0:10:21:[]  
-movementAllow 10 = 3:09:11:18:[]  
-movementAllow 11 = 6:10:15:[]  
-movementAllow 12 = 8:13:17:[]  
-movementAllow 13 = 3:12:14:20:[]  
-movementAllow 14 = 2:13:23:[]  
-movementAllow 15 = 11:16:[]  
-movementAllow 16 = 15:17:19:[]  
-movementAllow 17 = 12:16:[]  
-movementAllow 18 = 10:19:[]  
-movementAllow 19 = 16:18:20:22:[]  
-movementAllow 20 = 13:19:[]  
-movementAllow 21 = 09:22:[]  
-movementAllow 22 = 19:21:23:[]  
-movementAllow 23 = 14:22:[]  
+movementAllow  0 = [1, 9]
+movementAllow  1 = [0,2,4]  
+movementAllow  2 = [1,14]  
+movementAllow  3 = [4,10]
+movementAllow  4 = [1,3,5,7]
+movementAllow  5 = [4,13]
+movementAllow  6 = [7,11]
+movementAllow  7 = [4,6,8]
+movementAllow  8 = [7,12]
+movementAllow  9 = [0,10,21]
+movementAllow 10 = [3,09,11,18]
+movementAllow 11 = [6,10,15]
+movementAllow 12 = [8,13,17]
+movementAllow 13 = [3,12,14,20]
+movementAllow 14 = [2,13,23]
+movementAllow 15 = [11,16]
+movementAllow 16 = [15,17,19]
+movementAllow 17 = [12,16]
+movementAllow 18 = [10,19]
+movementAllow 19 = [16,18,20,22]
+movementAllow 20 = [13,19]
+movementAllow 21 = [9,22]
+movementAllow 22 = [19,21,23]
+movementAllow 23 = [14,22]
 
 
 -- The board from a position to the second, return if allowed
@@ -132,7 +132,7 @@ numberToken b t = count (line b) t
 
 -- Say If the position targeted can move
 canMove :: Board -> Int -> Bool
-canMove b i = length ( movements b i) /= 0
+canMove b i = not $ null (movements b i)
 
 -- Given a position, return the possible movements
 movements :: Board -> Int -> Movement
