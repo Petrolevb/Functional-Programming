@@ -1,7 +1,7 @@
 module NineMen where
 
 import Data.List (elem)
-import Data.Maybe (isNothing, fromJust)
+import Data.Maybe (isNothing, isJust, fromJust)
 
 data Board = Board { line ::[(Case, Movement)] }
     deriving Show
@@ -43,6 +43,7 @@ movementAllow 20 = [13,19]
 movementAllow 21 = [9,22]
 movementAllow 22 = [19,21,23]
 movementAllow 23 = [14,22]
+ 
 
 
 -- The board from a position to the second, return if allowed
@@ -66,9 +67,10 @@ deplacement b i1 i2 | not $ isMovementAllowed b i1 i2 = Nothing
                         Just $ changeCase (changeCase b i2 tok) i1 Empty
 
 
-createAlignement :: Board -> Int -> Int -> Bool
-createAlignement b i1 i2 | isNothing $ deplacement b i1 i2 = False
-                         | otherwise                       = not $ isNothing $ isAlign (fromJust (deplacement b i1 i2)) i2
+createAlignement :: Board -> Int -> Int -> (Maybe Board, Bool)
+createAlignement b i1 i2 = let newBoard = deplacement b i1 i2 in
+                                if isNothing newBoard then (Nothing, False)
+                                else (newBoard, isJust $ isAlign (fromJust newBoard) i2)
 
 
 -- Return if the board is finish: 
@@ -77,13 +79,13 @@ createAlignement b i1 i2 | isNothing $ deplacement b i1 i2 = False
 isFinish :: Board -> Bool
 isFinish b = (numberToken b Red < 3) || (numberToken b Black < 3)   ||
             -- if there is no token able to move
-             (not $ or $ map (canMove b) (positionToken b Red))     ||
-             (not $ or $ map (canMove b) (positionToken b Black))
+             not (any (canMove b) (positionToken b Red))     ||
+             not (any (canMove b) (positionToken b Black))
 
 winner :: Board -> Maybe Token
-winner b | not $ isFinish b                                                              = Nothing
-         | (numberToken b Red < 3) || (not $ or $ map (canMove b) (positionToken b Red)) = Just Black
-         | otherwise                                                                     = Just Red
+winner b | not $ isFinish b                                                       = Nothing
+         | (numberToken b Red < 3) || not (any (canMove b) (positionToken b Red)) = Just Black
+         | otherwise                                                              = Just Red
 
 numberToken :: Board -> Token -> Int
 numberToken b t = count (line b) t
@@ -115,43 +117,43 @@ test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)
 
 -- Return the token at the position given
 tokenAt :: Board -> Int ->  Maybe Token
-tokenAt b i = let (t, _) = (line b) !! i in
-              if (t == Empty) then Nothing
+tokenAt b i = let (t, _) = line b !! i in
+              if t == Empty then Nothing
               else 
                 let (Case return) = t in 
                 Just return
 
 isAlign :: Board -> Int -> Maybe Token
-isAlign b  0 = testCases ([getTuplet b [0,1,2], getTuplet b [0,9,21]])
-isAlign b  1 = testCases ([getTuplet b [0,1,2], getTuplet b [1,4,7]])
-isAlign b  2 = testCases ([getTuplet b [0,1,2], getTuplet b [2,14,23]])
-isAlign b  3 = testCases ([getTuplet b [3,4,5], getTuplet b [3,10,18]])
-isAlign b  4 = testCases ([getTuplet b [3,4,5], getTuplet b [1,4,7]])
-isAlign b  5 = testCases ([getTuplet b [3,4,5], getTuplet b [5,13,20]])
-isAlign b  6 = testCases ([getTuplet b [6,7,8], getTuplet b [6,11,15]])
-isAlign b  7 = testCases ([getTuplet b [6,7,8], getTuplet b [1,4,7]])
-isAlign b  8 = testCases ([getTuplet b [6,7,8], getTuplet b [8,12,17]])
-isAlign b  9 = testCases ([getTuplet b [9,10,11], getTuplet b [0,9,21]])
-isAlign b 10 = testCases ([getTuplet b [9,10,11], getTuplet b [3,10,18]])
-isAlign b 11 = testCases ([getTuplet b [9,10,11], getTuplet b [6,11,15]])
-isAlign b 12 = testCases ([getTuplet b [12,13,14], getTuplet b [8,12,17]])
-isAlign b 13 = testCases ([getTuplet b [12,13,14], getTuplet b [0,13,20]])
-isAlign b 14 = testCases ([getTuplet b [12,13,14], getTuplet b [2,14,23]])
-isAlign b 15 = testCases ([getTuplet b [15,16,17], getTuplet b [6,11,15]])
-isAlign b 16 = testCases ([getTuplet b [15,16,17], getTuplet b [16,19,22]])
-isAlign b 17 = testCases ([getTuplet b [15,16,17], getTuplet b [8,12,17]])
-isAlign b 18 = testCases ([getTuplet b [18,19,20], getTuplet b [3,10,18]])
-isAlign b 19 = testCases ([getTuplet b [18,19,20], getTuplet b [16,19,22]])
-isAlign b 20 = testCases ([getTuplet b [18,19,20], getTuplet b [0,19,21]])
-isAlign b 21 = testCases ([getTuplet b [21,22,23], getTuplet b [0,9,21]])
-isAlign b 22 = testCases ([getTuplet b [21,22,23], getTuplet b [16,19,22]])
-isAlign b 23 = testCases ([getTuplet b [21,22,23], getTuplet b [2,14,23]])
+isAlign b  0 = testCases [getTuplet b [0,1,2], getTuplet b [0,9,21]]
+isAlign b  1 = testCases [getTuplet b [0,1,2], getTuplet b [1,4,7]]
+isAlign b  2 = testCases [getTuplet b [0,1,2], getTuplet b [2,14,23]]
+isAlign b  3 = testCases [getTuplet b [3,4,5], getTuplet b [3,10,18]]
+isAlign b  4 = testCases [getTuplet b [3,4,5], getTuplet b [1,4,7]]
+isAlign b  5 = testCases [getTuplet b [3,4,5], getTuplet b [5,13,20]]
+isAlign b  6 = testCases [getTuplet b [6,7,8], getTuplet b [6,11,15]]
+isAlign b  7 = testCases [getTuplet b [6,7,8], getTuplet b [1,4,7]]
+isAlign b  8 = testCases [getTuplet b [6,7,8], getTuplet b [8,12,17]]
+isAlign b  9 = testCases [getTuplet b [9,10,11], getTuplet b [0,9,21]]
+isAlign b 10 = testCases [getTuplet b [9,10,11], getTuplet b [3,10,18]]
+isAlign b 11 = testCases [getTuplet b [9,10,11], getTuplet b [6,11,15]]
+isAlign b 12 = testCases [getTuplet b [12,13,14], getTuplet b [8,12,17]]
+isAlign b 13 = testCases [getTuplet b [12,13,14], getTuplet b [0,13,20]]
+isAlign b 14 = testCases [getTuplet b [12,13,14], getTuplet b [2,14,23]]
+isAlign b 15 = testCases [getTuplet b [15,16,17], getTuplet b [6,11,15]]
+isAlign b 16 = testCases [getTuplet b [15,16,17], getTuplet b [16,19,22]]
+isAlign b 17 = testCases [getTuplet b [15,16,17], getTuplet b [8,12,17]]
+isAlign b 18 = testCases [getTuplet b [18,19,20], getTuplet b [3,10,18]]
+isAlign b 19 = testCases [getTuplet b [18,19,20], getTuplet b [16,19,22]]
+isAlign b 20 = testCases [getTuplet b [18,19,20], getTuplet b [0,19,21]]
+isAlign b 21 = testCases [getTuplet b [21,22,23], getTuplet b [0,9,21]]
+isAlign b 22 = testCases [getTuplet b [21,22,23], getTuplet b [16,19,22]]
+isAlign b 23 = testCases [getTuplet b [21,22,23], getTuplet b [2,14,23]]
 
 testCases :: [[Case]] -> Maybe Token
 testCases []     = Nothing
-testCases (c:cs) = if (Empty `elem` c) then testCases cs
+testCases (c:cs) = if Empty `elem` c then testCases cs
                    else 
-                    let ((Case tok):cother) = c in
+                    let (Case tok:cother) = c in
                         -- If the three token are equal 
                         if   areEqual tok cother then Just tok 
                         else testCases cs
@@ -164,6 +166,6 @@ testCases (c:cs) = if (Empty `elem` c) then testCases cs
 -- Get the token at these places
 getTuplet :: Board -> [Int] -> [Case]
 getTuplet _ [] = []
-getTuplet b (i:is) = let (c, _) = ((line b) !! i) in
+getTuplet b (i:is) = let (c, _) = (line b !! i) in
                         c : getTuplet b is
 
