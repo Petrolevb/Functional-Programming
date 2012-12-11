@@ -1,6 +1,7 @@
 module NineMen where
 
 import Data.List (elem)
+import Data.Maybe (isNothing, fromJust)
 
 data Board = Board { line ::[(Case, Movement)] }
     deriving Show
@@ -63,6 +64,11 @@ deplacement b i1 i2 | not $ isMovementAllowed b i1 i2 = Nothing
                     | otherwise                       = 
                         let (tok, _) = line b !! i1 in
                         Just $ changeCase (changeCase b i2 tok) i1 Empty
+
+
+createAlignement :: Board -> Int -> Int -> Bool
+createAlignement b i1 i2 | isNothing $ deplacement b i1 i2 = False
+                         | otherwise                       = not $ isNothing $ isAlign (fromJust (deplacement b i1 i2)) i2
 
 
 -- Return if the board is finish: 
