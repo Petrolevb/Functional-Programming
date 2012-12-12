@@ -1,6 +1,6 @@
 module Board where
 
-import Data.Maybe (isNothing, fromJust)
+import Data.Maybe (isNothing, fromJust, fromMaybe)
 import Data.Char
 import GHC.IO
 import System.Console.ANSI
@@ -16,7 +16,7 @@ printB ((c, m):bs) | -- Create the first and last line for the board
                      (21 < length list && length list <= 24)
                      || length list <= 3 = do
                                               putStrLn $
-                                               createLine ((c,m):(take 2 bs))
+                                               createLine ((c,m):take 2 bs)
                                                " --------------------- " ""
                                               printB $ drop 2 bs
                    | -- Create first and last line for the middle square
@@ -24,7 +24,7 @@ printB ((c, m):bs) | -- Create the first and last line for the board
                      || (3 < length list && length list <= 6)
                      = do
                           putStrLn $ "|     "
-                                   ++ createLine ((c,m):(take 2 bs))
+                                   ++ createLine ((c,m):take 2 bs)
                                    " --------------- "
                                    "     |"
                           printB $ drop 2 bs
@@ -33,13 +33,13 @@ printB ((c, m):bs) | -- Create the first and last line for the board
                      || (6 < length list && length list <= 9)
                      = do
                           putStrLn $ "|     |     "
-                                   ++ createLine ((c,m):(take 2 bs))
+                                   ++ createLine ((c,m):take 2 bs)
                                       " --------- "
                                       "     |     |"
                           printB $ drop 2 bs
                    | -- Create the line in the middle of the board
                      otherwise = do
-                                   putStr $ createLine ((c,m):(take 2 bs))
+                                   putStr $ createLine ((c,m):take 2 bs)
                                              " --- "
                                              "                       "
                                    putStrLn $ createLine (take 3 (drop 2 bs))
@@ -52,15 +52,15 @@ printB ((c, m):bs) | -- Create the first and last line for the board
         createLine (s:ss) dash after = getCase (fst s) ++ dash ++ createLine ss dash after
 
 
-getCase :: Case -> [Char]
+getCase :: Case -> String
 getCase c = case c of
                       Case NineMen.Red   -> "H"
                       Case NineMen.Black -> "C"
                       _                  -> "°"
 
 gameLoop :: Board -> IO()
-gameLoop b | win       = do showWin
-           | lose      = do showLose
+gameLoop b | win       = showWin
+           | lose      = showLose
            | otherwise = do 
                     printBoard b
                     putStrLn "Enter two numbers : which token move, enter key then the position"
@@ -84,12 +84,10 @@ gameLoop b | win       = do showWin
 removeChoosenToken :: Board -> Board
 removeChoosenToken b =  
     let newBoard = removeToken b askPosition in
-    if isNothing newBoard 
-        then removeChoosenToken b 
-        else fromJust newBoard
+    fromMaybe (removeChoosenToken b) newBoard
 
 askPosition :: Int 
-askPosition = let p = fromIOPosition (readInt) in
+askPosition = let p = fromIOPosition readInt in
               if p == -1 
                 then askPosition 
                 else p
@@ -97,7 +95,7 @@ askPosition = let p = fromIOPosition (readInt) in
 readInt :: IO Int
 readInt = do inp <- getLine
              case reads inp of
-               ((a,t1):_) | all isSpace(t1) -> return a
+               ((a,t1):_) | all isSpace t1 -> return a
                _ -> return (-1)
 
 
