@@ -167,7 +167,8 @@ getTuplet b (i:is) = let (c, _) = (line b !! i) in
 
 
 removeToken :: Board -> Int -> Maybe Board
-removeToken b i | isAlign b i = Nothing
-                | otherwise   = changeCase b i Empty
+removeToken b i | not $ isNothing $ (isAlign b i) = Nothing
+                | otherwise                       = Just (changeCase b i Empty)
+
 test = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
 test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)
