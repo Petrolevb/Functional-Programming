@@ -111,11 +111,6 @@ positionToken b t = addPos 0 (line b) t
               addPos i ((c, _):s) t | Case t == c = i : addPos (i+1) s t
                                     | otherwise   = addPos (i+1) s t
 
-test  = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
-test2 = changeCase (changeCase test 8 (Case Black)) 4 (Case Black)
-test3 = changeCase test2 12 (Case Black)
-test4 = changeCase test3 11 (Case Black)
-
 -- Return the token at the position given
 tokenAt :: Board -> Int ->  Maybe Token
 tokenAt b i = let (t, _) = line b !! i in
@@ -177,3 +172,5 @@ removeToken b i | not $ isNothing $ (isAlign b i) = Nothing
 
 test = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
 test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)
+test3 = changeCase test2 12 (Case Black)
+test4 = changeCase test3 11 (Case Black)

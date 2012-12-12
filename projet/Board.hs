@@ -1,9 +1,10 @@
 module Board where
 
+import Data.Maybe (isNothing, fromJust)
+import Data.Char
+import GHC.IO
 import System.Console.ANSI
 import NineMen
-import Data.Maybe (isNothing, fromJust)
-import GHC.IO
 
 printBoard :: Board -> IO()
 printBoard b = do putStr "\ESC[2J"
@@ -88,10 +89,16 @@ removeChoosenToken b =
         else fromJust newBoard
 
 askPosition :: Int 
-askPosition = let p = fromIOPosition (readLn :: IO Int) in
+askPosition = let p = fromIOPosition (readInt) in
               if p == -1 
                 then askPosition 
                 else p
+
+readInt :: IO Int
+readInt = do inp <- getLine
+             case reads inp of
+               ((a,t1):_) | all isSpace(t1) -> return a
+               _ -> return (-1)
 
 
 fromIOPosition :: IO Int -> Int
