@@ -18,32 +18,60 @@ newBoard :: Board
 newBoard = Board [(Empty, movementAllow x) | x <- [0..23]]
 
 -- The database is build such as the positions allowed are sorted
+dataMovements :: [Movement]
+dataMovements = [[1,9], 
+                 [0,2,4],
+                 [1,14],
+                 [4,10],
+                 [1,3,5,7],
+                 [4,13],
+                 [7,11],
+                 [4,6,8],
+                 [7,12],
+                 [0,10,21],
+                 [3,09,11,18],
+                 [6,10,15],
+                 [8,13,17],
+                 [3,12,14,20],
+                 [2,13,23],
+                 [11,16],
+                 [15,17,19],
+                 [12,16],
+                 [10,19],
+                 [16,18,20,22],
+                 [13,19],
+                 [9,22],
+                 [19,21,23],
+                 [14,22] ]
+dataAlignements :: [([Int], [Int])]
+dataAlignements = [([0,1,2], [0,9,21]),
+                   ([0,1,2], [0,9,21]), 
+                   ([0,1,2], [1,4,7]),
+                   ([0,1,2], [2,14,23]),
+                   ([3,4,5], [3,10,18]),
+                   ([3,4,5], [1,4,7]),
+                   ([3,4,5], [5,13,20]),
+                   ([6,7,8], [6,11,15]),
+                   ([6,7,8], [1,4,7]),
+                   ([6,7,8], [8,12,17]),
+                   ([9,10,11], [0,9,21]),
+                   ([9,10,11], [3,10,18]),
+                   ([9,10,11], [6,11,15]),
+                   ([12,13,14], [8,12,17]),
+                   ([12,13,14], [0,13,20]),
+                   ([12,13,14], [2,14,23]),
+                   ([15,16,17], [6,11,15]),
+                   ([15,16,17], [16,19,22]),
+                   ([15,16,17], [8,12,17]),
+                   ([18,19,20], [3,10,18]),
+                   ([18,19,20], [16,19,22]),
+                   ([18,19,20], [0,19,21]),
+                   ([21,22,23], [0,9,21]),
+                   ([21,22,23], [16,19,22]),
+                   ([21,22,23], [2,14,23])]
+
 movementAllow :: Int -> Movement
-movementAllow  0 = [1, 9]
-movementAllow  1 = [0,2,4]  
-movementAllow  2 = [1,14]  
-movementAllow  3 = [4,10]
-movementAllow  4 = [1,3,5,7]
-movementAllow  5 = [4,13]
-movementAllow  6 = [7,11]
-movementAllow  7 = [4,6,8]
-movementAllow  8 = [7,12]
-movementAllow  9 = [0,10,21]
-movementAllow 10 = [3,09,11,18]
-movementAllow 11 = [6,10,15]
-movementAllow 12 = [8,13,17]
-movementAllow 13 = [3,12,14,20]
-movementAllow 14 = [2,13,23]
-movementAllow 15 = [11,16]
-movementAllow 16 = [15,17,19]
-movementAllow 17 = [12,16]
-movementAllow 18 = [10,19]
-movementAllow 19 = [16,18,20,22]
-movementAllow 20 = [13,19]
-movementAllow 21 = [9,22]
-movementAllow 22 = [19,21,23]
-movementAllow 23 = [14,22]
- 
+movementAllow i = dataMovements !! i 
 
 
 -- The board from a position to the second, return if allowed
@@ -88,11 +116,7 @@ winner b | not $ isFinish b                                                     
          | otherwise                                                              = Just Red
 
 numberToken :: Board -> Token -> Int
-numberToken b t = count (line b) t
-    where 
-        count [] _                         = 0
-        count ((c, _):s) t | Case t == c = 1 + count s t
-                           | otherwise     = count s t
+numberToken b t = length $ filter (\(c, _) -> c == Case t) (line b)
 
 -- Say If the position targeted can move
 canMove :: Board -> Int -> Bool
@@ -124,31 +148,9 @@ tokenAt b i = let (t, _) = line b !! i in
                 let (Case return) = t in 
                 Just return
 
+
 isAlign :: Board -> Int -> Maybe Token
-isAlign b  0 = testCases [getTuplet b [0,1,2], getTuplet b [0,9,21]]
-isAlign b  1 = testCases [getTuplet b [0,1,2], getTuplet b [1,4,7]]
-isAlign b  2 = testCases [getTuplet b [0,1,2], getTuplet b [2,14,23]]
-isAlign b  3 = testCases [getTuplet b [3,4,5], getTuplet b [3,10,18]]
-isAlign b  4 = testCases [getTuplet b [3,4,5], getTuplet b [1,4,7]]
-isAlign b  5 = testCases [getTuplet b [3,4,5], getTuplet b [5,13,20]]
-isAlign b  6 = testCases [getTuplet b [6,7,8], getTuplet b [6,11,15]]
-isAlign b  7 = testCases [getTuplet b [6,7,8], getTuplet b [1,4,7]]
-isAlign b  8 = testCases [getTuplet b [6,7,8], getTuplet b [8,12,17]]
-isAlign b  9 = testCases [getTuplet b [9,10,11], getTuplet b [0,9,21]]
-isAlign b 10 = testCases [getTuplet b [9,10,11], getTuplet b [3,10,18]]
-isAlign b 11 = testCases [getTuplet b [9,10,11], getTuplet b [6,11,15]]
-isAlign b 12 = testCases [getTuplet b [12,13,14], getTuplet b [8,12,17]]
-isAlign b 13 = testCases [getTuplet b [12,13,14], getTuplet b [0,13,20]]
-isAlign b 14 = testCases [getTuplet b [12,13,14], getTuplet b [2,14,23]]
-isAlign b 15 = testCases [getTuplet b [15,16,17], getTuplet b [6,11,15]]
-isAlign b 16 = testCases [getTuplet b [15,16,17], getTuplet b [16,19,22]]
-isAlign b 17 = testCases [getTuplet b [15,16,17], getTuplet b [8,12,17]]
-isAlign b 18 = testCases [getTuplet b [18,19,20], getTuplet b [3,10,18]]
-isAlign b 19 = testCases [getTuplet b [18,19,20], getTuplet b [16,19,22]]
-isAlign b 20 = testCases [getTuplet b [18,19,20], getTuplet b [0,19,21]]
-isAlign b 21 = testCases [getTuplet b [21,22,23], getTuplet b [0,9,21]]
-isAlign b 22 = testCases [getTuplet b [21,22,23], getTuplet b [16,19,22]]
-isAlign b 23 = testCases [getTuplet b [21,22,23], getTuplet b [2,14,23]]
+isAlign b i = testCases $ map (getTuplet b) ((\(fst, snd) -> [fst, snd]) $ dataAlignements !! i)
 
 testCases :: [[Case]] -> Maybe Token
 testCases []     = Nothing
@@ -172,8 +174,6 @@ getTuplet b (i:is) = let (c, _) = (line b !! i) in
 
 
 removeToken :: Board -> Int -> Maybe Board
-removeToken b i | not $ isNothing $ (isAlign b i) = Nothing
-                | otherwise                       = Just (changeCase b i Empty)
+removeToken b i | isJust (isAlign b i) = Nothing
+                | otherwise            = Just (changeCase b i Empty)
 
-test = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
-test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)

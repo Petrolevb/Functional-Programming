@@ -88,7 +88,8 @@ removeChoosenToken b =
         else fromJust newBoard
 
 askPosition :: Int 
-askPosition = let p = fromIOPosition (readLn :: IO Int) in
+{-# NOINLINE askPosition #-} 
+askPosition = let p = fromIOPosition (readIO $ unsafePerformIO $ getLine) in
               if p == -1 
                 then askPosition 
                 else p
