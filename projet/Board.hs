@@ -53,15 +53,9 @@ printB ((c, m):bs) | -- Create the first and last line for the board
 
 getCase :: Case -> [Char]
 getCase c = case c of
-<<<<<<< HEAD:projet/Board.hs
                       Case NineMen.Red   -> "H"
                       Case NineMen.Black -> "C"
                       _                  -> "°"
-=======
-                      Case NineMen.Red   -> " R "
-                      Case NineMen.Black -> " B "
-                      _          -> "   " 
-
 
 gameLoop :: Board -> IO()
 gameLoop b | win       = do showWin
@@ -106,4 +100,3 @@ fromIOPosition i = let pos = unsafePerformIO i in
                 if pos >= 0 && pos < 24 
                     then pos 
                     else -1
->>>>>>> add08babeeded22e7d7b957963f943ebcb8cd549:projet/Board.hs
