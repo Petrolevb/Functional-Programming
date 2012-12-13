@@ -130,7 +130,7 @@ movements b i = let (tok, pos) = line b !! i in
 
 -- Return all posistions for a given token
 positionToken :: Board -> Token -> [Int]
-positionToken b t = [x | (x, Case t) <- zip [0..] (map fst (line b))]
+positionToken b t = [x | (x, Case a) <- zip [0..] (map fst (line b)), a == t]
 
 -- Return the token at the position given
 tokenAt :: Board -> Int ->  Maybe Token
