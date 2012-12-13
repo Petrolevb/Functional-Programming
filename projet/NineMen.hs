@@ -4,7 +4,6 @@ import Data.List (elem)
 import Data.Maybe (isNothing, isJust, fromJust)
 
 data Board = Board { line ::[(Case, Movement)] }
-    deriving Show
 
 data Token = Red | Black
     deriving (Show, Eq)
@@ -45,7 +44,6 @@ dataMovements = [[1,9],
                  [14,22] ]
 dataAlignements :: [([Int], [Int])]
 dataAlignements = [([0,1,2], [0,9,21]),
-                   ([0,1,2], [0,9,21]), 
                    ([0,1,2], [1,4,7]),
                    ([0,1,2], [2,14,23]),
                    ([3,4,5], [3,10,18]),
@@ -95,8 +93,8 @@ deplacement b i1 i2 | not $ isMovementAllowed b i1 i2 = Nothing
                         Just $ changeCase (changeCase b i2 tok) i1 Empty
 
 
-createAlignement :: Board -> Int -> Int -> (Maybe Board, Bool)
-createAlignement b i1 i2 = let newBoard = deplacement b i1 i2 in
+createAlignment :: Board -> Int -> Int -> (Maybe Board, Bool)
+createAlignment b i1 i2 = let newBoard = deplacement b i1 i2 in
                                 if isNothing newBoard then (Nothing, False)
                                 else (newBoard, isJust $ isAlign (fromJust newBoard) i2)
 
@@ -147,7 +145,7 @@ isAlign b i = testCases $ map (getTuplet b) ((\(fst, snd) -> [fst, snd]) $ dataA
 testCases :: [[Case]] -> Maybe Token
 testCases []     = Nothing
 testCases (c:cs) = if Empty `elem` c then testCases cs
-                   else 
+                   else
                     let (Case tok:cother) = c in
                         -- If the three token are equal 
                         if   areEqual tok cother then Just tok 
@@ -171,5 +169,6 @@ removeToken b i | isJust (isAlign b i) = Nothing
 
 test = changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Red)) 2 (Case Red)
 test2= changeCase (changeCase test 3 (Case Black)) 4 (Case Black)
-test3 = changeCase test2 12 (Case Black)
-test4 = changeCase test3 11 (Case Black)
+test3 = changeCase test2 22 (Case Red)
+test4 = changeCase test3 6 (Case Black)
+test5 = changeCase (changeCase (changeCase (changeCase (changeCase (changeCase (changeCase newBoard 0 (Case Red)) 1 (Case Black)) 9 (Case Black)) 2 (Case Red)) 14 (Case Black)) 21 (Case Black)) 23 (Case Red)
