@@ -128,7 +128,7 @@ movements b i = let (tok, pos) = line b !! i in
 
 -- Return all posistions for a given token
 positionToken :: Board -> Token -> [Int]
-positionToken b t = [x | (x, Case t) <- zip [0..23] (map fst (line b))]
+positionToken b t = [x | (x, Case t) <- zip [0..] (map fst (line b))]
 
 -- Return the token at the position given
 tokenAt :: Board -> Int ->  Maybe Token
@@ -156,12 +156,13 @@ testCases (c:cs) = if Empty `elem` c then testCases cs
                 areEqual Black (Case Black:cs) = areEqual Black cs
                 areEqual _     _          = False
 
--- Get the token at these places
+-- Get tokens at these places
 getTuplet :: Board -> [Int] -> [Case]
-getTuplet _ [] = []
-getTuplet b (i:is) = let (c, _) = (line b !! i) in
-                        c : getTuplet b is
-
+getTuplet b is = [ fst $ snd x | x <- zip [0..] (line b), fst x `elem` is]
+{- 
+  - I finally found how to make a list comprehension here, but it looks a bit weird, 
+  - thus I'm able to every suggestions that you can advice
+-}
 
 removeToken :: Board -> Int -> Maybe Board
 removeToken b i | isJust (isAlign b i) = Nothing
