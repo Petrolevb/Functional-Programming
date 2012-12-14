@@ -161,7 +161,7 @@ getTuplet :: Board -> [Int] -> [Case]
 getTuplet b is = [ fst $ snd x | x <- zip [0..] (line b), fst x `elem` is]
 {- 
   - I finally found how to make a list comprehension here, but it looks a bit weird, 
-  - thus I'm able to every suggestions that you can advice
+  - thus I am open to every suggestions that you can give
 -}
 
 removeToken :: Board -> Int -> Maybe Board

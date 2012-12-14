@@ -56,41 +56,50 @@ getCase c = case c of
 
 gameLoop :: Board -> Token -> IO()
 gameLoop b token | win       = showWin
-           | lose      = showLose
-           | otherwise = do 
-              putStr $ "\ESC[2J" ++ show b
-              print token
-              putStrLn "Enter two numbers : token move, enter key then the position"
-              moveFrom <- askPosition
-              moveTo <- askPosition
-              if Just token /= tokenAt b moveFrom
-                 then gameLoop b token
-                 else
-                      let (tmpBoard, alignments) = createAlignment b moveFrom moveTo in
-                      if isNothing tmpBoard 
-                        then gameLoop b token
-                        else if alignments
-                               then do
-                                  putStrLn "Enter a token to remove : "
-                                  newBoard <- removeChoosenToken (fromJust tmpBoard)
-                                  gameLoop newBoard (nextToken token)
-                               else gameLoop (fromJust tmpBoard) (nextToken token)
-    where 
-        win                     = winner b == Just NineMen.Red
-        lose                    = winner b == Just NineMen.Black
-        showWin                 = putStrLn "Win Red"
-        showLose                = putStrLn "Win Black"
+                 | lose      = showLose
+                 | otherwise = do
+    putStr $ "\ESC[2J" ++ show b
+    print token
+    putStrLn "Enter two numbers : token move, enter key then the position"
+--    moveFrom <- askPosition
+--    moveTo <- askPosition
+    (moveFrom, moveTo) <- doTwice
+    if Just token /= tokenAt b moveFrom
+      then gameLoop b token
+      else
+          let (tmpBoard, alignments) = createAlignment b moveFrom moveTo in
+          if isNothing tmpBoard 
+             then gameLoop b token
+             else if alignments
+                     then do
+                          putStrLn "Enter a token to remove : "
+                          newBoard <- removeChoosenToken (fromJust tmpBoard) token
+                          gameLoop newBoard (nextToken token)
+                     else gameLoop (fromJust tmpBoard) (nextToken token)
+  where 
+       win                     = winner b == Just NineMen.Red
+       lose                    = winner b == Just NineMen.Black
+       showWin                 = putStrLn "Red wins"
+       showLose                = putStrLn "Black wins"
+       doTwice                 = do
+                                   a <- askPosition
+                                   b <- askPosition
+                                   return (a,b)
 
 nextToken :: Token -> Token
 nextToken t = case t of
                    NineMen.Black -> NineMen.Red
                    _             -> NineMen.Black
 
-removeChoosenToken :: Board -> IO Board
-removeChoosenToken b = do
+removeChoosenToken :: Board -> Token -> IO Board
+removeChoosenToken b t = do
     pos <- askPosition
-    let newBoard = removeToken b pos
-    maybe (removeChoosenToken b) return newBoard
+    if Just t /= tokenAt b pos
+       then let newBoard = removeToken b pos in
+            maybe (removeChoosenToken b t) return newBoard
+       else do
+              putStrLn "This is one of your token. Choose another one"
+              removeChoosenToken b t
 
 askPosition :: IO Int
 askPosition = do
