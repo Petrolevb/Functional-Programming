@@ -2,7 +2,6 @@ module Handler.Game where
 
 import Import
 
-
 entryForm :: Form (Int, Int)
 entryForm = renderDivs $ (,)
     <$> areq intField "From" Nothing
@@ -13,6 +12,7 @@ getGameR = do
      (gameWidget, enctype) <- generateFormPost entryForm
      defaultLayout $ do
          setTitle "9 men's Morris"
+         board <- lift newIdent
          $(widgetFile "9menMorris")
 
 postGameR :: Handler RepHtml
@@ -23,8 +23,12 @@ postGameR =  do
             let from = resFrom
             let to = resTo
             defaultLayout $ do
+                setTitle "9 men's Morris"
+                board <- lift newIdent
                 $(widgetFile "9menMorris")
          _ -> defaultLayout $ do
+                setTitle "9 men's Morris"
+                board <- lift newIdent
                 $(widgetFile "9menMorris")
 
 getBoardR :: Handler ()

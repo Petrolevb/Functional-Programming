@@ -1,27 +1,12 @@
-<head>
-  <title>9 men's Morris
-
 <h1>9 men's Morris
 <p>Welcome to the 9 men's Morris game
 <hr>
 <div #boardGame>
-  <div .board>
+  <div class="board">
     <img src="board.png" alt="Board Game" type="image/png" />
-  <div>
-    <img src="red.png" alt="Red Token" type="image/png" class="token" id="red" />
-    <img src="red.png" alt="Red Token" type="image/png" class="token" id="red2" />
-    <img src="red.png" alt="Red Token" type="image/png" class="token" id="red3" />
-  <div>
-    <img src="black.png" alt="Black Token" type="image/png" class="token" id="black" style="top: -50px; left: 225px;" />
-    <img src="black.png" alt="Black Token" type="image/png" class="token" id="black2" style="top: 25px; left: 170px;" />
-    <img src="black.png" alt="Black Token" type="image/png" class="token" id="black3" style="top: 100px; left: 115px;" />
+  <div id="red">
+  <div id="black">
 
-
-
-<!--  <script type="text/javascript">
-        var token = document.getElementById('black');
-        <img src="red.png" alt="Red Token" type="image/png" class="token" /> -->
- 
 <form method=post action=@{GameR} enctype=#{enctype}>
   ^{gameWidget}
   <input type="submit" value="Send it!">

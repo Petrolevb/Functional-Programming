@@ -1,0 +1,15 @@
+var red = document.getElementById('red');
+var black = document.getElementById('black');
+var token = document.createElement('img');
+
+token.alt   = "Red Token"
+token.src   = "red.png"
+token.type  = "image/png"
+token.class = "token"
+
+red.appendChild(token);
+
+token.alt = "Black Token"
+token.src = "black.png"
+
+black.appendChild(token);
