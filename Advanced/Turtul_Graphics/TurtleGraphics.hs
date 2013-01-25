@@ -12,7 +12,14 @@ main = do
 display :: IO ()
 display = do
   clear [ ColorBuffer ]
-  renderPrimitive Quads $ myCube
+  preservingMatrix $
+    do
+       translate (Vector3 (0.5 ::GLfloat) 0 0)
+       renderPrimitive Quads $ myCube
+  preservingMatrix $
+    do
+       rotate 90 (Vector3 (0 ::GLfloat) 0 1)
+       renderPrimitive Quads $ myCube
   flush
 
 myCube =
