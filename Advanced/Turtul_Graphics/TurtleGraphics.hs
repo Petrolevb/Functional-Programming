@@ -1,41 +1,64 @@
+-- | A graphical run function for the turtle DSL
+module TurtleGraphics (runGraphical) where
+
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT
+import System.Exit
  
-main :: IO ()
-main = do
-  (progname, _) <- getArgsAndInitialize
-  initialWindowSize $= Size 500 500
-  createWindow "Turtle Graphics"
+myPoints :: [(GLfloat,GLfloat,GLfloat)]
+myPoints = map (\k -> (sin(2*pi*k/12),cos(2*pi*k/12),0.0)) [1..12]
+
+-- | ...
+runGraphical :: a -> IO ()
+runGraphical program = do 
+  (_, _) <- getArgsAndInitialize
+  createWindow "Hello World"
   displayCallback $= display
   mainLoop
- 
-display :: IO ()
-display = do
-  clear [ ColorBuffer ]
-  preservingMatrix $
-    do
-       translate (Vector3 (0.5 ::GLfloat) 0 0)
-       renderPrimitive Quads $ myCube
-  preservingMatrix $
-    do
-       rotate 90 (Vector3 (0 ::GLfloat) 0 1)
-       renderPrimitive Quads $ myCube
-  flush
 
-myCube =
-  do
-    color $ (Color3 (1.0::GLfloat) 0 0)
-    vertex $ (Vertex3 (0  ::GLfloat) 0   0)
-    vertex $ (Vertex3 (0.2::GLfloat) 0.1 0)
-    vertex $ (Vertex3 (0.2::GLfloat) 0.4 0)
-    vertex $ (Vertex3 (0  ::GLfloat) 0.3 0)
-    color $ (Color3 (0::GLfloat) 1.0 0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0   0)
-    vertex $ (Vertex3 (-0.2::GLfloat) 0.1 0)
-    vertex $ (Vertex3 (-0.2::GLfloat) 0.4 0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0.3 0)
-    color $ (Color3 (0::GLfloat) 0 1.0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0.3 0)
-    vertex $ (Vertex3 (-0.2::GLfloat) 0.4 0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0.5 0)
-    vertex $ (Vertex3 (0.2 ::GLfloat) 0.4 0)
+display = do 
+  clear [ColorBuffer]
+  renderPrimitive Points $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) myPoints
+  flush
+  
+  
+{- -- Alernatively using GTK
+
+import Graphics.UI.Gtk
+import Graphics.Rendering.Cairo
+
+runGraphical :: a -> IO ()
+runGraphical program = do
+     initGUI
+     window <- windowNew
+     set window [windowTitle := "Hello Cairo",
+                 windowDefaultWidth := 300, windowDefaultHeight := 200,
+                 containerBorderWidth := 30 ]
+
+     frame <- frameNew
+     containerAdd window frame
+     canvas <- drawingAreaNew
+     containerAdd frame canvas
+     widgetModifyBg canvas StateNormal (Color 65535 65535 65535)
+
+     widgetShowAll window 
+     drawin <- widgetGetDrawWindow canvas
+     onExpose canvas (\x -> do renderWithDrawable drawin myDraw
+                               return True)
+    
+     onDestroy window mainQuit
+     mainGUI
+
+myDraw :: Render ()
+myDraw = do
+    setSourceRGB 1 1 0
+    setLineWidth 5
+
+    moveTo 120 60
+    lineTo 60 110
+    lineTo 180 110
+    closePath
+
+    stroke
+
+-}
