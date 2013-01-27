@@ -20,9 +20,7 @@ library
       TurtleGraphics
     , Turtle
   -- other-modules:       
-  build-depends:       base >= 4 && < 5,
-                       GLUT,
-                       OpenGL
+  build-depends:       base >= 4 && < 5, GLUT, OpenGL
 					   -- Add anything your package depends on here
                        
   
@@ -30,5 +28,6 @@ library
 executable coolturtle
   hs-source-dirs:      executable
   build-depends:       base >= 4 && < 5
-                     , turtle-graphics
+                     , turtle-graphics 
+                     , GLUT, OpenGL
   main-is: Example.hs
