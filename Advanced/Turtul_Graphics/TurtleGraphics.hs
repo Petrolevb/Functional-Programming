@@ -1,13 +1,49 @@
-module TurtleGraphics where
+-- | A graphical run function for the turtle DSL
+module TurtleGraphics (runGraphical) where
+
+import Graphics.Rendering.OpenGL
+import Graphics.UI.GLUT
+import System.Exit
 
 import Turtle
 
+-- | Draw a 2D cube representing a 3D cube,
+--   in 2 different places
+runGraphical :: IO ()
+runGraphical = do
+  (progname, _) <- getArgsAndInitialize
+  initialWindowSize $= Size 500 500
+  createWindow "Turtle Graphics"
+  displayCallback $= display
+  mainLoop
+ 
+display :: IO ()
+display = do
+  clear [ ColorBuffer ]
+  preservingMatrix $
+    do
+       translate (Vector3 (0.5 ::GLfloat) 0 0)
+       renderPrimitive Quads myCube
+  preservingMatrix $
+    do
+       rotate 90 (Vector3 (0 ::GLfloat) 0 1)
+       renderPrimitive Quads myCube
+  flush
 
-spiral :: Double -> Double -> Program ()
-spiral size angle | size > 100 = die 
-                  | otherwise  = undefined 
-                  {-
-                            forward size
-                            right angle
-                            spiral (size + 2) angle
-                            -}
+myCube =
+  do
+    color (Color3 (1.0::GLfloat) 0 0)
+    vertex (Vertex3 (0  ::GLfloat) 0   0)
+    vertex (Vertex3 (0.2::GLfloat) 0.1 0)
+    vertex (Vertex3 (0.2::GLfloat) 0.4 0)
+    vertex (Vertex3 (0  ::GLfloat) 0.3 0)
+    color (Color3 (0::GLfloat) 1.0 0)
+    vertex (Vertex3 (0   ::GLfloat) 0   0)
+    vertex (Vertex3 (-0.2::GLfloat) 0.1 0)
+    vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
+    vertex (Vertex3 (0   ::GLfloat) 0.3 0)
+    color (Color3 (0::GLfloat) 0 1.0)
+    vertex (Vertex3 (0   ::GLfloat) 0.3 0)
+    vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
+    vertex (Vertex3 (0   ::GLfloat) 0.5 0)
+    vertex (Vertex3 (0.2 ::GLfloat) 0.4 0)

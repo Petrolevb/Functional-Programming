@@ -30,4 +30,4 @@ executable coolturtle
   build-depends:       base >= 4 && < 5
                      , turtle-graphics 
                      , GLUT, OpenGL
-  main-is: Example.hs
+  main-is: Exemple.hs
