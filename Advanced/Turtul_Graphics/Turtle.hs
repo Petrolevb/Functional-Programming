@@ -49,13 +49,14 @@ instance Monad Program where
   p >>= k   =  undefined
 
 
--- | An action is performed by a turtle
---   and the new state of the turtle is returned
--- type Action = Turtle -> Operation -> Maybe Turtle
-data Action = Double
--- -- | general type for the following functions
+-- | An action is either :
+--   Move, Turn, Draw, Undraw or Die
+data Action = Move | Turn | Draw | Undraw | Die
+{-
+-- | general type for the following functions
 -- type Operation = a -> Program
 -- -}
+
 
 -- | Move the turtle forward
 forward  :: Double -> Program ()
