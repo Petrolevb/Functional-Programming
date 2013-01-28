@@ -21,27 +21,27 @@ display = do
   preservingMatrix $
     do
        translate (Vector3 (0.5 ::GLfloat) 0 0)
-       renderPrimitive Quads $ myCube
+       renderPrimitive Quads myCube
   preservingMatrix $
     do
        rotate 90 (Vector3 (0 ::GLfloat) 0 1)
-       renderPrimitive Quads $ myCube
+       renderPrimitive Quads myCube
   flush
 
 myCube =
   do
-    color $ (Color3 (1.0::GLfloat) 0 0)
-    vertex $ (Vertex3 (0  ::GLfloat) 0   0)
-    vertex $ (Vertex3 (0.2::GLfloat) 0.1 0)
-    vertex $ (Vertex3 (0.2::GLfloat) 0.4 0)
-    vertex $ (Vertex3 (0  ::GLfloat) 0.3 0)
-    color $ (Color3 (0::GLfloat) 1.0 0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0   0)
-    vertex $ (Vertex3 (-0.2::GLfloat) 0.1 0)
-    vertex $ (Vertex3 (-0.2::GLfloat) 0.4 0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0.3 0)
-    color $ (Color3 (0::GLfloat) 0 1.0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0.3 0)
-    vertex $ (Vertex3 (-0.2::GLfloat) 0.4 0)
-    vertex $ (Vertex3 (0   ::GLfloat) 0.5 0)
-    vertex $ (Vertex3 (0.2 ::GLfloat) 0.4 0)
+    color (Color3 (1.0::GLfloat) 0 0)
+    vertex (Vertex3 (0  ::GLfloat) 0   0)
+    vertex (Vertex3 (0.2::GLfloat) 0.1 0)
+    vertex (Vertex3 (0.2::GLfloat) 0.4 0)
+    vertex (Vertex3 (0  ::GLfloat) 0.3 0)
+    color (Color3 (0::GLfloat) 1.0 0)
+    vertex (Vertex3 (0   ::GLfloat) 0   0)
+    vertex (Vertex3 (-0.2::GLfloat) 0.1 0)
+    vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
+    vertex (Vertex3 (0   ::GLfloat) 0.3 0)
+    color (Color3 (0::GLfloat) 0 1.0)
+    vertex (Vertex3 (0   ::GLfloat) 0.3 0)
+    vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
+    vertex (Vertex3 (0   ::GLfloat) 0.5 0)
+    vertex (Vertex3 (0.2 ::GLfloat) 0.4 0)
