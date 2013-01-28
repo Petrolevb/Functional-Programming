@@ -28,7 +28,7 @@ module Turtle (
   
   ) where
 
-type Action      = Double -- Action may be a parameter to modify
+data Action      = Move | Turn | Draw | Undraw | Die
 type Position    = (Integer, Integer)
 type Color       = (Double, Double, Double)
 type Orientation = Double
