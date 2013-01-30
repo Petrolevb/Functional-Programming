@@ -7,7 +7,10 @@ main = runGraphical
 
 spiral :: Double -> Double -> Program ()
 spiral size angle | size > 100 = die 
-                  | otherwise  = undefined 
+                  | otherwise  = do
+                         forward size
+                         right angle
+                         spiral (size + 2) angle
                   {-
                             forward size
                             right angle
