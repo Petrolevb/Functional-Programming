@@ -35,7 +35,6 @@ type Orientation = Double
 type Color       = (Double, Double, Double)
 
 
--- {-
 -- | A turtle has
 --     a position, an orientation, a color
 --     and knows if the pen is down (True) or up (False)
@@ -52,10 +51,6 @@ instance Monad Program where
 -- | An action is either :
 --   Move, Turn, Draw, Undraw or Die
 data Action = Move | Turn | Draw | Undraw | Die
-{-
--- | general type for the following functions
--- type Operation = a -> Program
--- -}
 
 
 -- | Move the turtle forward
