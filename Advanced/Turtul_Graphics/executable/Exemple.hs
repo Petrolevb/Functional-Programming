@@ -6,7 +6,7 @@ import Turtle
 main = runGraphical
 
 spiral :: Double -> Double -> Program ()
-spiral size angle | size > 100 = die 
+spiral size angle | size > 100 = nothing 
                   | otherwise  = do
                          forward size
                          right angle

@@ -14,6 +14,7 @@ module Turtle (
     , lifespan
     , times
     , forever
+    , nothing
   -- , (<|>)
   -- , ... 
 
@@ -28,7 +29,7 @@ module Turtle (
   ) where
 
 -- | Coordinates x and y of the turtle
-type Position    = (Integer, Integer)
+type Position    = (Double, Double)
 -- | Orientation of the turtle around the axis z
 type Orientation = Double
 -- | Color of the turtle
@@ -38,20 +39,24 @@ type Color       = (Double, Double, Double)
 -- | A turtle has
 --     a position, an orientation, a color
 --     and knows if the pen is down (True) or up (False)
-type Turtle a = Action -> (a, Position, Orientation, Color, Bool)
+newtype Turtle = T {pos :: Position, angle :: Double, color :: Color, pen :: Bool}
+-- type Turtle a = Action -> (a, Position, Orientation, Color, Bool)
+
 
 -- | The type of a complete program
-newtype Program a = P { getTurtle :: Turtle a }
+--   The turle and the interface stored
+newtype Program = P { turtle :: Turtle, prog :: IO () }
+-- newtype Program = P { getTurtle :: Turtle }
 
 instance Monad Program where
-  return x  =  undefined
+  return  =  undefined
   p >>= k   =  undefined
 
-
+{-
 -- | An action is either :
 --   Move, Turn, Draw, Undraw or Die
 data Action = Move | Turn | Draw | Undraw | Die
-
+-}
 
 -- | Move the turtle forward
 forward  :: Double -> Program ()
@@ -70,13 +75,15 @@ penup    :: Program ()
 -- | Allow the turtle to draw
 pendown  :: Program ()
 -- | Kill the turtle
-die      :: Program ()  -- We stop the turtle
+die      :: Program ()
 -- | Set the lifespan of the turtle, it will die when that time reach 0
 lifespan :: Int -> Program ()
 -- | Repeat a number of time the program
-times    :: Int -> Program ()
+times    :: Int -> (Double -> Program ()) -> Program ()
 -- | Run the program forever
-forever  :: Program ()
+forever  :: (Double -> Program ()) -> Program ()
+-- | Stops the turtle
+nothing :: Program ()
 
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
@@ -92,7 +99,8 @@ die      = undefined
 lifespan = undefined
 times    = undefined
 forever  = undefined
+nothing  = undefined
 
 -- | Running a program is following what a turtle do
 run :: Program a -> Turtle a
-run = getTurtle
+run = undefined

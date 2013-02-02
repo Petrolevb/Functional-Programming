@@ -16,6 +16,13 @@ runGraphical = do
   createWindow "Turtle Graphics"
   displayCallback $= display
   mainLoop
+
+-- | Function that will draw a new line in the program
+--   Sketch for the real function runGraphicals
+runGraphical' :: [(GLfloat,GLfloat,GLfloat)] -> IO()
+runGraphical' a = do
+  renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
+  flush
  
 display :: IO ()
 display = do
