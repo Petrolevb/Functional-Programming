@@ -12,7 +12,7 @@ import Turtle
 runGraphical :: IO ()
 runGraphical = do
   (progname, _) <- getArgsAndInitialize
-  initialWindowSize $= Size 500 500
+  initialWindowSize $= Size 800 800
   createWindow "Turtle Graphics"
   displayCallback $= display
   mainLoop
@@ -27,12 +27,15 @@ runGraphical' a = do
 display :: IO ()
 display = do
   clear [ ColorBuffer ]
+  color (Color3 (1.0::GLfloat) 1.0 0)
+  runGraphical' [(0,0,0),(1,0,0)]
   preservingMatrix $
     do
        translate (Vector3 (0.5 ::GLfloat) 0 0)
        renderPrimitive Quads myCube
   preservingMatrix $
     do
+       translate (Vector3 (-0.5::GLfloat) 0 0)
        rotate 90 (Vector3 (0 ::GLfloat) 0 1)
        renderPrimitive Quads myCube
   flush

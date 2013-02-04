@@ -23,7 +23,7 @@ module Turtle (
     , left
   
   -- * Run functions
-  -- runTextual :: Program -> IO ()
+  --, runTextual :: Program -> IO ()
   --, run
   
   ) where
@@ -52,7 +52,8 @@ startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False
 instance Monad Program where
   return  =  undefined
   p >>= k   =  undefined
---}
+-}
+
 {-
 -- | An action is either :
 --   Move, Turn, Draw, Undraw or Die
@@ -75,18 +76,16 @@ color    :: Turtle -> Color -> Turtle
 penup    :: Turtle -> Turtle
 -- | Allow the turtle to draw
 pendown  :: Turtle -> Turtle
-
--- Kill the turtle
+-- | Kill the turtle
 die      :: Turtle -> Turtle
-
 -- | Set the lifespan of the turtle, it will die when that time reach 0
-lifespan :: Int -> Turtle
+lifespan :: Turtle -> Int -> Turtle
 -- | Repeat a number of time the program
 times    :: Int -> Turtle
 -- | Run the program forever
 forever  :: Turtle -> Turtle
 -- | Stops the turtle
-nothing :: Turtle -> Turtle
+nothing  :: Turtle -> Turtle
 
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
@@ -98,13 +97,17 @@ left     tur ang = right tur (360 - ang)
 color    tur col = Turtle (pos tur) (angle tur) col (pen tur)
 penup    tur     = Turtle (pos tur) (angle tur) (getColor tur) False
 pendown  tur     = Turtle (pos tur) (angle tur) (getColor tur) True
-die      = undefined
-lifespan = undefined
-times    = undefined
-forever  = undefined
-nothing  = undefined
+die              = undefined
+lifespan         = undefined
+times            = undefined
+forever          = undefined
+nothing tur      = tur
 
 
--- From a position and a direction, return the new position 
+-- | From a position and a direction, return the new position 
 movePosition :: Position -> Double -> Double -> Position
 movePosition (x, y) ang len = ((x + len * (cos ang)), (y + len * (sin ang)))
+
+
+-- run :: Turtle -> (a-> Turtle) -> (Turtle, Turtle)
+run tur action = (tur, action tur)
