@@ -56,7 +56,7 @@ startingProgram = [(Start, startingTurtle)]
 -- | An action is either :
 --   Move, Turn, Draw, Undraw or Die
 type Action = (Operation, Turtle)
-data Operation = Start | Move | Turn | Draw | Undraw | Die
+data Operation = Start | Move | Turn | Color | ChangeDraw | Die
 
 -- | Move the turtle forward
 forward  :: Program -> Double -> Program
@@ -88,16 +88,34 @@ nothing  :: Turtle -> Turtle
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
 
-forward  tur len = Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
-                          (getColor tur) (pen tur) (life tur)
-right    tur ang = Turtle (pos tur) ((angle tur) + ang)
-                          (getColor tur) (pen tur) (life tur)
-backward tur len = forward (right tur 180) len
-left     tur ang = right tur (360 - ang)
-color    tur col = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
-penup    tur     = Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
-pendown  tur     = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
-die      tur     = Turtle (pos tur) (angle tur) (getColor tur) False 0
+forward actions len = (Move, (newturtle (snd $ head actions) len)):actions
+    where newturtle tur len
+             = Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
+                      (getColor tur) (pen tur) (life tur)
+backward prog len = forward (right prog 180) len
+
+right actions ang   = (Turn, (newturtle (snd $ head actions) ang)):actions
+    where newturtle tur ang 
+             = Turtle (pos tur) ((angle tur) + ang)
+                      (getColor tur) (pen tur) (life tur)
+left     actions  ang = right actions (360 - ang)
+
+
+color actions col   = (Color, (newcol (snd $ head actions) col)):actions
+    where newcol tur col 
+             = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
+
+penup    actions    = (ChangeDraw, (newturtle (snd $ head actions))):actions
+    where newturtle tur 
+             =  Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
+
+pendown  actions    = (ChangeDraw, (newturtle (snd $ head actions))):actions    
+    where newturtle tur 
+             = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
+
+die      actions    = (Die, (newturtle (snd $ head actions))):actions     
+    where newturtle tur 
+             = Turtle (pos tur) (angle tur) (getColor tur) False 0
 lifespan tur li  = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
 times            = undefined
 forever          = undefined
