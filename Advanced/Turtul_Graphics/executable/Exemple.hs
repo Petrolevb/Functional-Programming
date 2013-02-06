@@ -4,9 +4,11 @@ module Main where
 import Turtle
 
 -- main = runGraphical -- $ spiral (startingProgram) 0 91
-main = runTextual turtle1
-  where turtle = forward startingProgram 15
-        turtle1 = die turtle
+main = runTextual turtle3
+  where turtle = forward startingProgram 0.5
+        turtle1 = right turtle 90
+        turtle2 = forward turtle1 0.5
+        turtle3 = die turtle2
 
 
 spiral :: Program -> Double -> Double -> Program
