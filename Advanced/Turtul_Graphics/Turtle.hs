@@ -177,7 +177,7 @@ right actions ang   | checkLife turtle 1
     where turtle = snd $ head actions
           newturtle tur ang 
              = decreaseLife $
-               Turtle (pos tur) (angle tur + ang)
+               Turtle (pos tur) (angle tur - ang)
                       (getColor tur) (pen tur) (life tur) (shown tur)
 
 left   actions  ang = right actions (360 - ang)
