@@ -38,6 +38,41 @@ module Turtle (
   
   ) where
 
+
+{- 
+------- Comments over the assignements ------
+
+We appologize about some features over this assignements
+we know that our implementation cannot cover the function forever
+nor than it can allow us to use the parralelization with <|>
+
+Nevertheless, we already thought about how change the source code
+to use these features. Currently, we're using a program as a list 
+of Action, which disallow us to know which turtle are moving.
+We shall change this to another kind of list, or to a list of
+operations and parrameters, applied to a turtle. By this way,
+the implementation of <|> will be just to cross the two lists.
+
+About the forever, the problem is that we have a stack of instructions
+instead of a list. By the list implementation of haskell, we're adding
+each operations to the stack, then reverse this stack just before 
+executing operations. We shall change this by adding all instructions
+each time to the end of the list, which will allow the used of the function
+forever. In addition to that, the changing of the code for the <|> operation
+will also correct another problem of forever : we keep a turtle and an 
+instruction in the Action. Such as if we use forever with forward, the
+turtle won't go stright away but will spawn to the original point, go to
+its direction, then come back to the previous point, then go, etc...
+By using Operation and parameters, we will loop over this operation and the
+parameters not over the turtles
+
+
+
+-}
+
+
+
+
 -- | Coordinates x and y of the turtle
 type Position    = (Double, Double)
 -- | Orientation of the turtle around the axis z
@@ -174,7 +209,8 @@ getPen = pen
 
 -- | From a position and a direction, return the new position 
 movePosition :: Position -> Double -> Double -> Position
-movePosition (x, y) ang len = (x + len * cos ang, y + len * sin ang)
+movePosition (x, y) ang len = (x + len * cos (ang * pi / 180), 
+                               y + len * sin (ang * pi / 180))
 
 -- | Remove a number x of life to the turtle
 removeLife :: Turtle -> Int -> Turtle
