@@ -1,26 +1,33 @@
 -- | A graphical run function for the turtle DSL
 module TurtleGraphics (runGraphical) where
 
+import Control.Concurrent
+import Data.IORef
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT as GUI
-import Control.Concurrent
-import System.Exit
 
 import Turtle as T
 
--- | Initialiaze the windows
-initial :: IO ()
-initial = do
-  (progname, _) <- getArgsAndInitialize
-  initialWindowSize $= Size 800 800
-  createWindow "Turtle Graphics"
-  displayCallback $= display
-  mainLoop
+-- | Proving information to send to the graphical rendering
+data ProgramState = ProgramState { actions :: T.Program}
 
 -- | Initialize a window before drawing the program
 runGraphical ::  T.Program -> IO ()
 runGraphical actions = do
-  initial
+  initialDisplayMode $= [RGBAMode, DoubleBuffered]
+  initialWindowSize $= Size 800 800
+  (progname, _) <- getArgsAndInitialize
+
+  state <- newIORef actions
+
+  createWindow "Turtle Graphics"
+  displayCallback $= run state
+  mainLoop
+
+run ::  IORef [Action] -> IO ()
+run state = do
+  clear[ ColorBuffer ]
+  actions <- readIORef state
   let a = reverse actions
   runGraphical' a
 
@@ -39,7 +46,7 @@ drawAction sturtle
                      | otherwise = do drawLine col coor
   where (x1, y1) = getPos sturtle
         (x2, y2) = getPos eturtle
-        coor = [(x1,y1,0),(x2,y2,0)]
+        coor = [(x1/100,y1/100,0),(x2/100,y2/100,0)]
         col = getColor sturtle
 drawAction _ (_, tur) = return ()
 
@@ -51,37 +58,4 @@ drawLine (r,g,b) a = do
   GUI.color (Color3 r g b)
   renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
   flush
-
--- | Draw a line and two 3D cubes
-display :: IO ()
-display = do
-  clear [ ColorBuffer ]
-  drawLine (1.0::GLfloat, 1.0, 1.0) [(0::GLfloat,0.0,0.0),(1.0::GLfloat,0.0,0.0)]
-  preservingMatrix $
-    do
-       translate (Vector3 (0.5 ::GLfloat) 0 0)
-       renderPrimitive Quads myCube
-  preservingMatrix $
-    do
-       translate (Vector3 (-0.5::GLfloat) 0 0)
-       rotate 90 (Vector3 (0 ::GLfloat) 0 1)
-       renderPrimitive Quads myCube
-  flush
-
-myCube =
-  do
-    GUI.color (Color3 (1.0::GLfloat) 0 0)
-    vertex (Vertex3 (0  ::GLfloat) 0   0)
-    vertex (Vertex3 (0.2::GLfloat) 0.1 0)
-    vertex (Vertex3 (0.2::GLfloat) 0.4 0)
-    vertex (Vertex3 (0  ::GLfloat) 0.3 0)
-    GUI.color (Color3 (0::GLfloat) 1.0 0)
-    vertex (Vertex3 (0   ::GLfloat) 0   0)
-    vertex (Vertex3 (-0.2::GLfloat) 0.1 0)
-    vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
-    vertex (Vertex3 (0   ::GLfloat) 0.3 0)
-    GUI.color (Color3 (0::GLfloat) 0 1.0)
-    vertex (Vertex3 (0   ::GLfloat) 0.3 0)
-    vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
-    vertex (Vertex3 (0   ::GLfloat) 0.5 0)
-    vertex (Vertex3 (0.2 ::GLfloat) 0.4 0)
+  swapBuffers
