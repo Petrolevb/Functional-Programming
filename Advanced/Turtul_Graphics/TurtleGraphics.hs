@@ -6,7 +6,7 @@ import Graphics.UI.GLUT as GUI
 import Control.Concurrent
 import System.Exit
 
-import Turtle
+import Turtle as T
 
 initial :: IO ()
 initial = do
@@ -28,16 +28,20 @@ data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :
 
 -- | Draw a 2D cube representing a 3D cube,
 --   in 2 different places
-runGraphical ::  [Action] -> IO ()
+runGraphical ::  T.Program -> IO ()
 runGraphical actions = do
   initial
+  clear [ ColorBuffer ]
   let a = reverse actions
-  let start = snd $ head a
-  let next = head $ tail a
-  runGraphical' start next
+  runGraphical' a
 
-runGraphical' :: Turtle -> Action -> IO ()
-runGraphical' sturtle
+runGraphical' :: T.Program -> IO ()
+runGraphical' (_:[]) = return ()
+runGraphical' ((_, stur):etur:ss) = do drawAction stur etur
+                                       runGraphical' (etur:ss)
+
+drawAction :: Turtle -> Action -> IO ()
+drawAction sturtle
               (Move, eturtle)
                      | not(getPen sturtle)  = return ()
                      | otherwise = do drawLine col coor
@@ -47,16 +51,11 @@ runGraphical' sturtle
         col = getColor sturtle
 --        (r, g, b) = getColor sturtle
 --        col = Color3 r g b
-runGraphical' _ (_, tur) = return ()
+drawAction _ (_, tur) = return ()
 
 
 -- | Function that will draw a new line in the program
 -- drawLine :: (GLfloat, GLfloat, GLfloat) -> [(GLfloat,GLfloat,GLfloat)] -> IO()
-drawLine' col a = do
-  GUI.color col
-  renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
-  flush
-
 drawLine (r,g,b) a = do
   GUI.color (Color3 r g b)
   renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
