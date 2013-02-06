@@ -43,7 +43,8 @@ data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :
 -- type Turtle a = Action -> (a, Position, Orientation, Color, Bool)
 
 startingTurtle :: Turtle
-startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False -1
+startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
+
 -- | The type of a complete program
 --   The turle and the interface stored
 --data Program = P { turtle :: Turtle, prog :: IO () }
@@ -90,18 +91,20 @@ nothing  :: Turtle -> Turtle
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
 
-forward  tur len  = Turtle (movePosition (pos tur) (angle tur) len) (angle tur) (getColor tur) (pen tur) (life tur)
-right    tur ang  = Turtle (pos tur) ((angle tur) + ang) (getColor tur) (pen tur) (life tur)
-backward tur len  = forward (right tur 180) len
-left     tur ang  = right tur (360 - ang)
-color    tur col  = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
-penup    tur      = Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
-pendown  tur      = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
-die      tur      = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) 0
-lifespan tur life = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) life
-times             = undefined
-forever           = undefined
-nothing tur       = tur
+forward  tur len = Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
+                          (getColor tur) (pen tur) (life tur)
+right    tur ang = Turtle (pos tur) ((angle tur) + ang)
+                          (getColor tur) (pen tur) (life tur)
+backward tur len = forward (right tur 180) len
+left     tur ang = right tur (360 - ang)
+color    tur col = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
+penup    tur     = Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
+pendown  tur     = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
+die      tur     = Turtle (pos tur) (angle tur) (getColor tur) False 0
+lifespan tur li  = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
+times            = undefined
+forever          = undefined
+nothing tur      = tur
 
 
 -- | From a position and a direction, return the new position 
