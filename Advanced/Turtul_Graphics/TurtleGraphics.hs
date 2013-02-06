@@ -8,6 +8,7 @@ import System.Exit
 
 import Turtle as T
 
+-- | Initialiaze the windows
 initial :: IO ()
 initial = do
   (progname, _) <- getArgsAndInitialize
@@ -16,30 +17,21 @@ initial = do
   displayCallback $= display
   mainLoop
 
-{-
-data Operation =    Start    |
-                    Move     | Turn       |
-                    Color    | ChangeDraw |
-                    GiveLife | Die
-type Action = (Operation, Turtle)
-data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :: Bool, life :: Int}
--}
-
-
--- | Draw a 2D cube representing a 3D cube,
---   in 2 different places
+-- | Initialize a window before drawing the program
 runGraphical ::  T.Program -> IO ()
 runGraphical actions = do
   initial
-  clear [ ColorBuffer ]
   let a = reverse actions
   runGraphical' a
 
+-- | Helper function for going throught the list of Action
 runGraphical' :: T.Program -> IO ()
+runGraphical' [] = return ()
 runGraphical' (_:[]) = return ()
 runGraphical' ((_, stur):etur:ss) = do drawAction stur etur
                                        runGraphical' (etur:ss)
 
+-- | Draw a line if the action requires it
 drawAction :: Turtle -> Action -> IO ()
 drawAction sturtle
               (Move, eturtle)
@@ -49,31 +41,22 @@ drawAction sturtle
         (x2, y2) = getPos eturtle
         coor = [(x1,y1,0),(x2,y2,0)]
         col = getColor sturtle
---        (r, g, b) = getColor sturtle
---        col = Color3 r g b
 drawAction _ (_, tur) = return ()
 
 
 -- | Function that will draw a new line in the program
--- drawLine :: (GLfloat, GLfloat, GLfloat) -> [(GLfloat,GLfloat,GLfloat)] -> IO()
+drawLine :: (VertexComponent a1, ColorComponent a) =>
+            (a, a, a) -> [(a1, a1, a1)] -> IO()
 drawLine (r,g,b) a = do
   GUI.color (Color3 r g b)
   renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
   flush
 
+-- | Draw a line and two 3D cubes
 display :: IO ()
 display = do
   clear [ ColorBuffer ]
-  drawLine (1.0::GLfloat, 1.0, 1.0) [(0::GLfloat,0,0),((-1.0::GLfloat),0,0)]
-  flush
-
-
-{-
-display :: IO ()
-display = do
-  clear [ ColorBuffer ]
-  GUI.color (Color3 (1.0::GLfloat) 1.0 0)
-  runGraphical' [(0,0,0),(1,0,0)]
+  drawLine (1.0::GLfloat, 1.0, 1.0) [(0::GLfloat,0.0,0.0),(1.0::GLfloat,0.0,0.0)]
   preservingMatrix $
     do
        translate (Vector3 (0.5 ::GLfloat) 0 0)
@@ -102,4 +85,3 @@ myCube =
     vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
     vertex (Vertex3 (0   ::GLfloat) 0.5 0)
     vertex (Vertex3 (0.2 ::GLfloat) 0.4 0)
--}

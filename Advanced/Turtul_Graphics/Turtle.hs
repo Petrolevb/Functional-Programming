@@ -22,11 +22,9 @@ module Turtle (
     , times
     , forever
     , nothing
-  -- , (<|>)
     , (-=>)
-  -- , ... 
-    , decreaseLife
-    , removeLife
+  -- , (<|>)
+  -- , ...
 
   -- * Derived operations
     , backward
@@ -61,12 +59,10 @@ each time to the end of the list, which will allow the used of the function
 forever. In addition to that, the changing of the code for the <|> operation
 will also correct another problem of forever : we keep a turtle and an 
 instruction in the Action. Such as if we use forever with forward, the
-turtle won't go stright away but will spawn to the original point, go to
+turtle won't go straight away but will spawn to the original point, go to
 its direction, then come back to the previous point, then go, etc...
 By using Operation and parameters, we will loop over this operation and the
 parameters not over the turtles
-
-
 
 -}
 
