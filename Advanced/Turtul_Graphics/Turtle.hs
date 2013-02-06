@@ -187,3 +187,10 @@ decreaseLife tur | life tur > -1 = Turtle (pos tur) (angle tur) (getColor tur) (
 checkLife :: Turtle -> Int -> Bool
 checkLife tur x | life tur > -1 = life tur >= x
                 | otherwise     = True
+
+
+-- | Allow build sequential instructions
+--   forward x y -=> right x y ...
+(-=>) :: Program -> (Program -> a -> Program) -> Program
+prog -=> next = (\a -> next prog a)
+
