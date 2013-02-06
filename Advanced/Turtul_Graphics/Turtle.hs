@@ -125,9 +125,9 @@ lifespan actions li = (GiveLife, newturtle (snd $ head actions)):actions
              = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
 
 times actions x | x == 0    = actions
-                | otherwise = times (head actions : actions) (x - 1)
+                | otherwise = actions ++ times actions (x - 1)
 
-forever actions  = forever $ head actions : actions
+forever actions  = forever $ actions ++ actions
 
 nothing actions  = actions
 
