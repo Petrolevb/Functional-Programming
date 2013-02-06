@@ -4,7 +4,7 @@ module Turtle (
   -- * The turtle type(s)
   -- Non-exhausive list of possible types: Turtle, Program, Action, Operation
     Program
-    Turtle
+    , Turtle
     , startingProgram
   -- * Primitive operations
     , forward
@@ -48,24 +48,15 @@ startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
 
 -- | The type of a complete program
 --   The turle and the interface stored
---data Program = P { turtle :: Turtle, prog :: IO () }
--- newtype Program = P { getTurtle :: Turtle }
-data Program = [(Action, Turtle)]
+type Program = [Action]
 
 startingProgram :: Program
 startingProgram = [(Start, startingTurtle)]
 
-{-
-instance Monad Program where
-  return  =  undefined
-  p >>= k   =  undefined
--}
-
---{-
 -- | An action is either :
 --   Move, Turn, Draw, Undraw or Die
-data Action = Start | Move | Turn | Draw | Undraw | Die
---}
+type Action = (Operation, Turtle)
+data Operation = Start | Move | Turn | Draw | Undraw | Die
 
 -- | Move the turtle forward
 forward  :: Program -> Double -> Program
@@ -120,3 +111,7 @@ movePosition (x, y) ang len = ((x + len * (cos ang)), (y + len * (sin ang)))
 
 -- run :: Turtle -> (a-> Turtle) -> (Turtle, Turtle)
 run tur action = (tur, action tur)
+
+
+
+
