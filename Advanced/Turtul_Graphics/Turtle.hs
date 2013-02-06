@@ -45,6 +45,7 @@ data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :
 startingTurtle :: Turtle
 startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
 
+
 -- | Move the turtle forward
 forward  :: Turtle -> Double -> Turtle
 -- | Rotate the turtle to the right
@@ -98,8 +99,6 @@ movePosition (x, y) ang len = ((x + len * (cos ang)), (y + len * (sin ang)))
 
 -- run :: Turtle -> (a-> Turtle) -> (Turtle, Turtle)
 run tur action = (tur, action tur)
-
-
 
 
 type Program = [Action]
