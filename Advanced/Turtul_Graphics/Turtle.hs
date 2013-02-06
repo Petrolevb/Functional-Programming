@@ -6,6 +6,8 @@ module Turtle (
     Program
     , Turtle
     , startingProgram
+    , Action
+    , Operation
   -- * Primitive operations
     , forward
     , right
