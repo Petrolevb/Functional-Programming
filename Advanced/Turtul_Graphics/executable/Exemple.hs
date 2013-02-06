@@ -3,7 +3,10 @@ module Main where
 import TurtleGraphics
 import Turtle
 
-main = runGraphical -- $ spiral (startingProgram) 0 91
+-- main = runGraphical -- $ spiral (startingProgram) 0 91
+main = runTextual turtle1
+  where turtle = forward startingProgram 15
+        turtle1 = die turtle
 
 
 spiral :: Program -> Double -> Double -> Program

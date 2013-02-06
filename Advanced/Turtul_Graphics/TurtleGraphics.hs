@@ -2,32 +2,78 @@
 module TurtleGraphics (runGraphical) where
 
 import Graphics.Rendering.OpenGL
-import Graphics.UI.GLUT
+import Graphics.UI.GLUT as GUI
+import Control.Concurrent
 import System.Exit
 
 import Turtle
 
--- | Draw a 2D cube representing a 3D cube,
---   in 2 different places
-runGraphical :: IO ()
-runGraphical = do
+initial :: IO ()
+initial = do
   (progname, _) <- getArgsAndInitialize
   initialWindowSize $= Size 800 800
   createWindow "Turtle Graphics"
   displayCallback $= display
   mainLoop
 
+{-
+data Operation =    Start    |
+                    Move     | Turn       |
+                    Color    | ChangeDraw |
+                    GiveLife | Die
+type Action = (Operation, Turtle)
+data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :: Bool, life :: Int}
+-}
+
+
+-- | Draw a 2D cube representing a 3D cube,
+--   in 2 different places
+runGraphical ::  [Action] -> IO ()
+runGraphical actions = do
+  initial
+  let a = reverse actions
+  let start = snd $ head a
+  let next = head $ tail a
+  runGraphical' start next
+
+runGraphical' :: Turtle -> Action -> IO ()
+runGraphical' sturtle
+              (Move, eturtle)
+                     | not(getPen sturtle)  = return ()
+                     | otherwise = do drawLine col coor
+  where (x1, y1) = getPos sturtle
+        (x2, y2) = getPos eturtle
+        coor = [(x1,y1,0),(x2,y2,0)]
+        col = getColor sturtle
+--        (r, g, b) = getColor sturtle
+--        col = Color3 r g b
+runGraphical' _ (_, tur) = return ()
+
+
 -- | Function that will draw a new line in the program
---   Sketch for the real function runGraphicals
-runGraphical' :: [(GLfloat,GLfloat,GLfloat)] -> IO()
-runGraphical' a = do
+-- drawLine :: (GLfloat, GLfloat, GLfloat) -> [(GLfloat,GLfloat,GLfloat)] -> IO()
+drawLine' col a = do
+  GUI.color col
   renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
   flush
- 
+
+drawLine (r,g,b) a = do
+  GUI.color (Color3 r g b)
+  renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
+  flush
+
 display :: IO ()
 display = do
   clear [ ColorBuffer ]
-  color (Color3 (1.0::GLfloat) 1.0 0)
+  drawLine (1.0::GLfloat, 1.0, 1.0) [(0::GLfloat,0,0),((-1.0::GLfloat),0,0)]
+  flush
+
+
+{-
+display :: IO ()
+display = do
+  clear [ ColorBuffer ]
+  GUI.color (Color3 (1.0::GLfloat) 1.0 0)
   runGraphical' [(0,0,0),(1,0,0)]
   preservingMatrix $
     do
@@ -42,18 +88,19 @@ display = do
 
 myCube =
   do
-    color (Color3 (1.0::GLfloat) 0 0)
+    GUI.color (Color3 (1.0::GLfloat) 0 0)
     vertex (Vertex3 (0  ::GLfloat) 0   0)
     vertex (Vertex3 (0.2::GLfloat) 0.1 0)
     vertex (Vertex3 (0.2::GLfloat) 0.4 0)
     vertex (Vertex3 (0  ::GLfloat) 0.3 0)
-    color (Color3 (0::GLfloat) 1.0 0)
+    GUI.color (Color3 (0::GLfloat) 1.0 0)
     vertex (Vertex3 (0   ::GLfloat) 0   0)
     vertex (Vertex3 (-0.2::GLfloat) 0.1 0)
     vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
     vertex (Vertex3 (0   ::GLfloat) 0.3 0)
-    color (Color3 (0::GLfloat) 0 1.0)
+    GUI.color (Color3 (0::GLfloat) 0 1.0)
     vertex (Vertex3 (0   ::GLfloat) 0.3 0)
     vertex (Vertex3 (-0.2::GLfloat) 0.4 0)
     vertex (Vertex3 (0   ::GLfloat) 0.5 0)
     vertex (Vertex3 (0.2 ::GLfloat) 0.4 0)
+-}
