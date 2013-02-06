@@ -8,6 +8,8 @@ module Turtle (
     , startingProgram
     , Action
     , Operation
+  -- * Relative to the datas
+    , getPos
   -- * Primitive operations
     , forward
     , right
@@ -44,8 +46,16 @@ type Color       = (Double, Double, Double)
 -- | A turtle has
 --     a position, an orientation, a color
 --     and knows if the pen is down (True) or up (False)
-data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :: Bool, life :: Int}
+data Turtle = Turtle {
+                pos :: Position, angle :: Double, 
+                getColor :: Color, pen :: Bool, 
+                life :: Int
+                     }
     deriving Show
+
+
+getPos :: Turtle -> Position
+getPos = pos
 
 startingTurtle :: Turtle
 startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
