@@ -64,6 +64,10 @@ its direction, then come back to the previous point, then go, etc...
 By using Operation and parameters, we will loop over this operation and the
 parameters not over the turtles
 
+We also know that the "stepping" function implies to change the implementation
+of the type Program. But our aim is now to perform a functionnal program which
+will simply works, not something full of error
+
 -}
 
 
@@ -83,12 +87,13 @@ type Color       = (Double, Double, Double)
 data Turtle = Turtle {
                 pos :: Position, angle :: Double, 
                 getColor :: Color, pen :: Bool, 
-                life :: Int
+                life :: Int,
+                shown :: Bool
                      }
     deriving Show
 
 startingTurtle :: Turtle
-startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1)
+startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1) True
 
 -- | The type of a complete program
 --   The turle and the interface stored
@@ -103,7 +108,7 @@ type Action = (Operation, Turtle)
 -- | Define the different operation to know what to do
 data Operation =    Start    |
                     Move     | Turn       | Pause |
-                    Color    | ChangeDraw |
+                    Color    | ChangeDraw | ChangeShown |
                     GiveLife | Die
     deriving (Show, Eq)
 
@@ -140,6 +145,12 @@ getPos :: Turtle -> Position
 -- | Return the state of the pen
 getPen :: Turtle -> Bool
 
+step       :: Program -> Program
+stepping   :: Program -> Program
+showTurtle :: Program -> Program
+hideTurtle :: Program -> Program
+
+
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
 
@@ -152,7 +163,7 @@ forward actions len | checkLife turtle (ceiling $ abs len)
           newturtle tur len
              = removeLife (
                Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
-                      (getColor tur) (pen tur) (life tur)
+                      (getColor tur) (pen tur) (life tur) (shown tur)
                ) (ceiling len)
 
 backward actions le = forward actions (-le)
@@ -164,34 +175,44 @@ right actions ang   | checkLife turtle 1
           newturtle tur ang 
              = decreaseLife $
                Turtle (pos tur) (angle tur + ang)
-                      (getColor tur) (pen tur) (life tur)
+                      (getColor tur) (pen tur) (life tur) (shown tur)
 
 left   actions  ang = right actions (360 - ang)
 
 color actions col   = (Color, newcol turtle col):actions
     where turtle = snd $ head actions
           newcol tur col
-             = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
+             = Turtle (pos tur) (angle tur) 
+                      col (pen tur) (life tur)
+                      (shown tur)
 
 penup    actions    = (ChangeDraw, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             =  Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
+             =  Turtle (pos tur) (angle tur) 
+                       (getColor tur) False (life tur)
+                       (shown tur)
 
 pendown  actions    = (ChangeDraw, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) True (life tur)
+                      (shown tur)
 
 die      actions    = (Die, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             = Turtle (pos tur) (angle tur) (getColor tur) False 0
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) False 0
+                      (shown tur)
 
 lifespan actions li = (GiveLife, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) (pen tur) li
+                      (shown tur)
 
 times actions x | x == 0    = actions
                 | otherwise = actions ++ times actions (x - 1)
@@ -224,6 +245,7 @@ decreaseLife :: Turtle -> Turtle
 decreaseLife tur | life tur > -1 =
                         Turtle (pos tur) (angle tur)
                                (getColor tur) (pen tur) (life tur - 1)
+                               (shown tur)
                  | otherwise     = tur
 
 -- | Check  if the turtle has enough lifes
@@ -237,6 +259,22 @@ checkLife tur x | life tur > -1 = life tur >= x
 --   forward x y -=> right x y ...
 (-=>) :: Program -> (Program -> a -> Program) -> a -> Program
 prog -=> next = (\a -> next prog a)
+
+step       = undefined
+stepping   = undefined
+
+showTurtle actions           = (ChangeDraw, newturtle turtle):actions
+    where turtle = snd $ head actions
+          newturtle tur
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) (pen tur) (life tur)
+                      True
+hideTurtle actions           = (ChangeDraw, newturtle turtle):actions
+    where turtle = snd $ head actions
+          newturtle tur
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) (pen tur) (life tur)
+                      False
 
 -- | Textual explanation of what a turtle do
 runTextual :: Program -> IO ()
