@@ -3,8 +3,10 @@
 module Turtle (
   -- * The turtle type(s)
   -- Non-exhausive list of possible types: Turtle, Program, Action, Operation
-    Program
-    , Turtle
+      Program
+    , Turtle (getColor)
+    , Action
+    , Operation (Move, Die)
     , startingProgram
   -- * Primitive operations
     , forward
@@ -16,6 +18,8 @@ module Turtle (
     , times
     , forever
     , nothing
+    , getPos
+    , getPen
   -- , (<|>)
   -- , ... 
 
@@ -41,10 +45,10 @@ type Color       = (Double, Double, Double)
 --     a position, an orientation, a color
 --     and knows if the pen is down (True) or up (False)
 data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :: Bool, life :: Int}
--- type Turtle a = Action -> (a, Position, Orientation, Color, Bool)
+  deriving(Show)
 
 startingTurtle :: Turtle
-startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
+startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) False (-1)
 
 -- | The type of a complete program
 --   The turle and the interface stored
@@ -53,12 +57,13 @@ type Program = [Action]
 startingProgram :: Program
 startingProgram = [(Start, startingTurtle)]
 
--- | An action is either :
---   Move, Turn, Draw, Undraw or Die
+-- | An action is an Operation and the Turtle that result from this operation
 type Action = (Operation, Turtle)
-data Operation =    Start | 
-                    Move     | Turn       | 
-                    Color    | ChangeDraw | 
+
+-- | Define the different operation to know what to do
+data Operation =    Start    |
+                    Move     | Turn       |
+                    Color    | ChangeDraw |
                     GiveLife | Die
 
 -- | Move the turtle forward
@@ -87,6 +92,10 @@ times    :: Program -> Int -> Program
 forever  :: Program -> Program
 -- | Stops the turtle
 nothing  :: Program -> Program
+-- | Return the position of a turtle
+getPos :: Turtle -> Position
+-- | Return the state of the pen
+getPen :: Turtle -> Bool
 
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
@@ -95,33 +104,34 @@ forward actions len = (Move, newturtle (snd $ head actions) len):actions
     where newturtle tur len
              = Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
                       (getColor tur) (pen tur) (life tur)
-backward prog     = forward (right prog 180)
+
+backward prog       = forward (right prog 180)
 
 right actions ang   = (Turn, newturtle (snd $ head actions) ang):actions
-    where newturtle tur ang 
+    where newturtle tur ang
              = Turtle (pos tur) (angle tur + ang)
                       (getColor tur) (pen tur) (life tur)
-left     actions  ang = right actions (360 - ang)
 
+left   actions  ang = right actions (360 - ang)
 
 color actions col   = (Color, newcol (snd $ head actions) col):actions
-    where newcol tur col 
+    where newcol tur col
              = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
 
 penup    actions    = (ChangeDraw, newturtle (snd $ head actions)):actions
-    where newturtle tur 
+    where newturtle tur
              =  Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
 
-pendown  actions    = (ChangeDraw, newturtle (snd $ head actions)):actions    
+pendown  actions    = (ChangeDraw, newturtle (snd $ head actions)):actions
     where newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
 
-die      actions    = (Die, newturtle (snd $ head actions)):actions     
-    where newturtle tur 
+die      actions    = (Die, newturtle (snd $ head actions)):actions
+    where newturtle tur
              = Turtle (pos tur) (angle tur) (getColor tur) False 0
 
 lifespan actions li = (GiveLife, newturtle (snd $ head actions)):actions
-    where newturtle tur 
+    where newturtle tur
              = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
 
 times actions x | x == 0    = actions
@@ -131,6 +141,9 @@ forever actions  = forever $ head actions : actions
 
 nothing actions  = actions
 
+getPos = pos
+
+getPen = pen
 
 -- | From a position and a direction, return the new position 
 movePosition :: Position -> Double -> Double -> Position
