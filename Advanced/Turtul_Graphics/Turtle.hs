@@ -56,7 +56,7 @@ startingProgram = [(Start, startingTurtle)]
 -- | An action is either :
 --   Move, Turn, Draw, Undraw or Die
 type Action = (Operation, Turtle)
-data Operation = Start | 
+data Operation =    Start | 
                     Move     | Turn       | 
                     Color    | ChangeDraw | 
                     GiveLife | Die
@@ -82,7 +82,7 @@ die      :: Program -> Program
 -- | Set the lifespan of the turtle, it will die when that time reach 0
 lifespan :: Program -> Int -> Program
 -- | Repeat a number of time the program
-times    :: Int -> Turtle
+times    :: Program -> Int -> Program
 -- | Run the program forever
 forever  :: Program -> Program
 -- | Stops the turtle
@@ -124,7 +124,8 @@ lifespan actions li = (GiveLife, (newturtle (snd $ head actions))):actions
     where newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
 
-times            = undefined
+times actions x | x == 0    = actions
+                | otherwise = times ((head actions):actions) (x - 1)
 
 forever actions  = forever $ (head actions):actions
 
