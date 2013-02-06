@@ -81,9 +81,9 @@ lifespan :: Turtle -> Int -> Turtle
 -- | Repeat a number of time the program
 times    :: Int -> Turtle
 -- | Run the program forever
-forever  :: Turtle -> Turtle
+forever  :: Program -> Program
 -- | Stops the turtle
-nothing  :: Turtle -> Turtle
+nothing  :: Program -> Program
 
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
@@ -116,10 +116,13 @@ pendown  actions    = (ChangeDraw, (newturtle (snd $ head actions))):actions
 die      actions    = (Die, (newturtle (snd $ head actions))):actions     
     where newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) False 0
+
 lifespan tur li  = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
 times            = undefined
-forever          = undefined
-nothing tur      = tur
+
+forever actions  = forever $ (head actions):actions
+
+nothing actions  = actions
 
 
 -- | From a position and a direction, return the new position 
