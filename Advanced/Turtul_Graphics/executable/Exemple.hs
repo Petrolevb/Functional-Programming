@@ -28,4 +28,4 @@ flower actions size = times (square size -=> right $ 10) 36
 
 -- Draw a square of size in parameter
 square :: Program -> Double -> Program
-square actions size = times (forward (head actions) size -=> right $ 90) 4
+square actions size = times (forward [head actions] size -=> right $ 90) 4
