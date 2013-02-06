@@ -21,6 +21,7 @@ module Turtle (
   -- , (<|>)
   -- , ... 
     , decreaseLife
+    , removeLife
 
   -- * Derived operations
     , backward
@@ -44,6 +45,7 @@ type Color       = (Double, Double, Double)
 --     a position, an orientation, a color
 --     and knows if the pen is down (True) or up (False)
 data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :: Bool, life :: Int}
+    deriving Show
 
 startingTurtle :: Turtle
 startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
@@ -62,6 +64,7 @@ data Operation =    Start |
                     Move     | Turn       | 
                     Color    | ChangeDraw | 
                     GiveLife | Die
+    deriving (Show, Eq)
 
 -- | Move the turtle forward
 forward  :: Program -> Double -> Program
@@ -93,37 +96,53 @@ nothing  :: Program -> Program
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
 
-forward actions len = (Move, newturtle (snd $ head actions) len):actions
-    where newturtle tur len
-             = Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
+forward actions len | checkLife turtle (ceiling $ abs len)
+                            = (Move, newturtle turtle len):actions
+                    | otherwise 
+                            = die $ 
+                              forward actions (fromIntegral $ life turtle)
+    where turtle = snd $ head actions
+          newturtle tur len
+             = removeLife (
+               Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
                       (getColor tur) (pen tur) (life tur)
-backward prog     = forward (right prog 180)
+                          ) (ceiling len)
+backward actions le = forward actions (-le)
 
-right actions ang   = (Turn, newturtle (snd $ head actions) ang):actions
-    where newturtle tur ang 
-             = Turtle (pos tur) (angle tur + ang)
+right actions ang   | checkLife turtle 1
+                            = (Turn, newturtle turtle ang):actions
+                    | otherwise = die actions
+    where turtle = snd $ head actions
+          newturtle tur ang 
+             = decreaseLife $
+               Turtle (pos tur) (angle tur + ang)
                       (getColor tur) (pen tur) (life tur)
 left     actions  ang = right actions (360 - ang)
 
 
-color actions col   = (Color, newcol (snd $ head actions) col):actions
-    where newcol tur col 
+color actions col   = (Color, newcol turtle col):actions
+    where turtle = snd $ head actions
+          newcol tur col 
              = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
 
-penup    actions    = (ChangeDraw, newturtle (snd $ head actions)):actions
-    where newturtle tur 
+penup    actions    = (ChangeDraw, newturtle turtle):actions
+    where turtle = snd $ head actions
+          newturtle tur 
              =  Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
 
-pendown  actions    = (ChangeDraw, newturtle (snd $ head actions)):actions    
-    where newturtle tur 
+pendown  actions    = (ChangeDraw, newturtle turtle):actions    
+    where turtle = snd $ head actions
+          newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
 
-die      actions    = (Die, newturtle (snd $ head actions)):actions     
-    where newturtle tur 
+die      actions    = (Die, newturtle turtle):actions     
+    where turtle = snd $ head actions
+          newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) False 0
 
-lifespan actions li = (GiveLife, newturtle (snd $ head actions)):actions
-    where newturtle tur 
+lifespan actions li = (GiveLife, newturtle turtle):actions
+    where turtle = snd $ head actions
+          newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
 
 times actions x | x == 0    = actions
@@ -142,5 +161,19 @@ movePosition (x, y) ang len = (x + len * cos ang, y + len * sin ang)
 -- run :: Turtle -> (a-> Turtle) -> (Turtle, Turtle)
 run tur action = (tur, action tur)
 
+-- | Remove a number x of life to the turtle
+removeLife :: Turtle -> Int -> Turtle
+removeLife tur _ | life tur == -1 = tur
+removeLife tur 0                  = tur
+removeLife tur x                  = removeLife (decreaseLife tur) (x-1)
+
+-- | Remove one life to the turtle
 decreaseLife :: Turtle -> Turtle
-decreaseLife tur = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) (life tur - 1)
+decreaseLife tur | life tur > -1 = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) (life tur - 1)
+                 | otherwise     = tur
+
+-- | Check  if the turtle has enough lifes
+--   if the life is under 0, always True
+checkLife :: Turtle -> Int -> Bool
+checkLife tur x | life tur > -1 = life tur >= x
+                | otherwise     = True
