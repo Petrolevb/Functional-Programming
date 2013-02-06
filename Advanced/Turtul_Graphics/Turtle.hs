@@ -91,50 +91,50 @@ nothing  :: Program -> Program
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
 
-forward actions len = (Move, (newturtle (snd $ head actions) len)):actions
+forward actions len = (Move, newturtle (snd $ head actions) len):actions
     where newturtle tur len
              = Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
                       (getColor tur) (pen tur) (life tur)
-backward prog len = forward (right prog 180) len
+backward prog     = forward (right prog 180)
 
-right actions ang   = (Turn, (newturtle (snd $ head actions) ang)):actions
+right actions ang   = (Turn, newturtle (snd $ head actions) ang):actions
     where newturtle tur ang 
-             = Turtle (pos tur) ((angle tur) + ang)
+             = Turtle (pos tur) (angle tur + ang)
                       (getColor tur) (pen tur) (life tur)
 left     actions  ang = right actions (360 - ang)
 
 
-color actions col   = (Color, (newcol (snd $ head actions) col)):actions
+color actions col   = (Color, newcol (snd $ head actions) col):actions
     where newcol tur col 
              = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
 
-penup    actions    = (ChangeDraw, (newturtle (snd $ head actions))):actions
+penup    actions    = (ChangeDraw, newturtle (snd $ head actions)):actions
     where newturtle tur 
              =  Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
 
-pendown  actions    = (ChangeDraw, (newturtle (snd $ head actions))):actions    
+pendown  actions    = (ChangeDraw, newturtle (snd $ head actions)):actions    
     where newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
 
-die      actions    = (Die, (newturtle (snd $ head actions))):actions     
+die      actions    = (Die, newturtle (snd $ head actions)):actions     
     where newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) False 0
 
-lifespan actions li = (GiveLife, (newturtle (snd $ head actions))):actions
+lifespan actions li = (GiveLife, newturtle (snd $ head actions)):actions
     where newturtle tur 
              = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
 
 times actions x | x == 0    = actions
-                | otherwise = times ((head actions):actions) (x - 1)
+                | otherwise = times (head actions : actions) (x - 1)
 
-forever actions  = forever $ (head actions):actions
+forever actions  = forever $ head actions : actions
 
 nothing actions  = actions
 
 
 -- | From a position and a direction, return the new position 
 movePosition :: Position -> Double -> Double -> Position
-movePosition (x, y) ang len = ((x + len * (cos ang)), (y + len * (sin ang)))
+movePosition (x, y) ang len = (x + len * cos ang, y + len * sin ang)
 
 
 -- run :: Turtle -> (a-> Turtle) -> (Turtle, Turtle)
