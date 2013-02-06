@@ -18,6 +18,14 @@ spiral tur size angle | size > 100 = nothing tur
                       | otherwise  = 
             spiral (forward tur size -=> right $ angle) (size + 2) angle
 
+-- Draw a flower of the size in parameter
+flower :: Program -> Double -> Program
+flower actions size = times (square size -=> right $ 10) 36
+
+-- Draw a square of size in parameter
+square :: Program -> Double -> Program
+square actions size = times (forward (head actions) size -=> right $ 90) 4
+
 -- ^ Question : Can you use the lifespan command to define the example?
 --       With the lifespan command, we make the turtle move until it dies.
 --       We need to update the size before each forward

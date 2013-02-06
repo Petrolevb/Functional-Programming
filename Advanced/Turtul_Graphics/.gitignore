@@ -1,2 +1,4 @@
 *.o
 dist
+.~lock*
+*.bak~
