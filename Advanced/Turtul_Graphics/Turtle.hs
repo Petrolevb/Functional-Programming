@@ -3,8 +3,9 @@
 module Turtle (
   -- * The turtle type(s)
   -- Non-exhausive list of possible types: Turtle, Program, Action, Operation
-    --Program
+    Program
     Turtle
+    , startingProgram
   -- * Primitive operations
     , forward
     , right
@@ -49,36 +50,41 @@ startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
 --   The turle and the interface stored
 --data Program = P { turtle :: Turtle, prog :: IO () }
 -- newtype Program = P { getTurtle :: Turtle }
+data Program = [(Action, Turtle)]
+
+startingProgram :: Program
+startingProgram = [(Start, startingTurtle)]
+
 {-
 instance Monad Program where
   return  =  undefined
   p >>= k   =  undefined
 -}
 
-{-
+--{-
 -- | An action is either :
 --   Move, Turn, Draw, Undraw or Die
-data Action = Move | Turn | Draw | Undraw | Die
--}
+data Action = Start | Move | Turn | Draw | Undraw | Die
+--}
 
 -- | Move the turtle forward
-forward  :: Turtle -> Double -> Turtle
+forward  :: Program -> Double -> Program
 -- | Rotate the turtle to the right
-right    :: Turtle -> Double -> Turtle
+right    :: Program -> Double -> Program
 -- | Move the turtle backward
 --   rotating it by 180° and then move forward
-backward :: Turtle -> Double -> Turtle
+backward :: Program -> Double -> Program
 -- | Rotate the turtle to the left
 --   rotating to the right for 360-'value'
-left     :: Turtle -> Double -> Turtle
+left     :: Program -> Double -> Program
 -- | Change the color of the turtle
-color    :: Turtle -> Color -> Turtle
+color    :: Program -> Color -> Program
 -- | Avoid the turtle to draw for until the pen is down again
-penup    :: Turtle -> Turtle
+penup    :: Program -> Program
 -- | Allow the turtle to draw
-pendown  :: Turtle -> Turtle
+pendown  :: Program -> Program
 -- | Kill the turtle
-die      :: Turtle -> Turtle
+die      :: Program -> Program
 -- | Set the lifespan of the turtle, it will die when that time reach 0
 lifespan :: Turtle -> Int -> Turtle
 -- | Repeat a number of time the program

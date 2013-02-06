@@ -3,8 +3,19 @@ module Main where
 import TurtleGraphics
 import Turtle
 
-main = runGraphical
+main = runGraphical $ spiral (startingProgram) 0 91
+
+
+spiral :: Program -> Double -> Double -> Program
+
 {-
+spiral tur size angle | size > 100 = nothing tur
+                      | otherwise  = spiral
+                                        (right 
+                                            (forward tur size)
+                                         angle) 
+                                      (size + 2) angle
+--{-
 spiral :: Double -> Double -> Program ()
 spiral size angle | size > 100 = nothing 
                   | otherwise  = do
