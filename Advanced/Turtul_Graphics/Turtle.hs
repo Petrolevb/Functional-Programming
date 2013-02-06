@@ -43,7 +43,6 @@ type Color       = (Double, Double, Double)
 --     a position, an orientation, a color
 --     and knows if the pen is down (True) or up (False)
 data Turtle = Turtle {pos :: Position, angle :: Double, getColor :: Color, pen :: Bool, life :: Int}
--- type Turtle a = Action -> (a, Position, Orientation, Color, Bool)
 
 startingTurtle :: Turtle
 startingTurtle = Turtle (0, 0) 0 (0, 0, 0) False (-1)
@@ -129,7 +128,7 @@ lifespan actions li = (GiveLife, newturtle (snd $ head actions)):actions
 times actions x | x == 0    = actions
                 | otherwise = actions ++ times actions (x - 1)
 
-forever actions  = forever $ actions ++ actions
+forever actions  = actions ++ forever $ actions
 
 nothing actions  = actions
 
