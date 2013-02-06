@@ -23,6 +23,7 @@ module Turtle (
     , forever
     , nothing
   -- , (<|>)
+    , (-=>)
   -- , ... 
     , decreaseLife
     , removeLife
@@ -197,7 +198,7 @@ checkLife tur x | life tur > -1 = life tur >= x
 
 -- | Allow build sequential instructions
 --   forward x y -=> right x y ...
-(-=>) :: Program -> (Program -> a -> Program) -> Program
+(-=>) :: Program -> (Program -> a -> Program) -> a -> Program
 prog -=> next = (\a -> next prog a)
 
 -- | Textual explanation of what a turtle do
