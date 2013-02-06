@@ -20,6 +20,7 @@ module Turtle (
     , nothing
   -- , (<|>)
   -- , ... 
+    , decreaseLife
 
   -- * Derived operations
     , backward
@@ -128,7 +129,7 @@ lifespan actions li = (GiveLife, newturtle (snd $ head actions)):actions
 times actions x | x == 0    = actions
                 | otherwise = actions ++ times actions (x - 1)
 
-forever actions  = actions ++ forever $ actions
+forever actions  = actions ++ forever actions
 
 nothing actions  = actions
 
@@ -141,6 +142,5 @@ movePosition (x, y) ang len = (x + len * cos ang, y + len * sin ang)
 -- run :: Turtle -> (a-> Turtle) -> (Turtle, Turtle)
 run tur action = (tur, action tur)
 
-
-
-
+decreaseLife :: Turtle -> Turtle
+decreaseLife tur = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) (life tur - 1)
