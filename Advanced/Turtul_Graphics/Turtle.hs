@@ -4,7 +4,7 @@ module Turtle (
   -- * The turtle type(s)
   -- Non-exhausive list of possible types: Turtle, Program, Action, Operation
     Program
-    , Turtle
+    , Turtle (getColor)
     , startingProgram
     , Action
     , Operation
