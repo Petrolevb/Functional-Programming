@@ -25,8 +25,6 @@ module Turtle (
   -- , (<|>)
     , (-=>)
   -- , ... 
-    , decreaseLife
-    , removeLife
 
   -- * Derived operations
     , backward
@@ -66,8 +64,6 @@ its direction, then come back to the previous point, then go, etc...
 By using Operation and parameters, we will loop over this operation and the
 parameters not over the turtles
 
-
-
 -}
 
 
@@ -106,7 +102,7 @@ type Action = (Operation, Turtle)
 
 -- | Define the different operation to know what to do
 data Operation =    Start    |
-                    Move     | Turn       |
+                    Move     | Turn       | Pause |
                     Color    | ChangeDraw |
                     GiveLife | Die
     deriving (Show, Eq)
@@ -137,6 +133,8 @@ times    :: Program -> Int -> Program
 forever  :: Program -> Program
 -- | Stops the turtle
 nothing  :: Program -> Program
+-- | Put the program in pause, wait a continue from the user
+pause :: Program -> Program
 -- | Return the position of a turtle
 getPos :: Turtle -> Position
 -- | Return the state of the pen
@@ -201,6 +199,9 @@ times actions x | x == 0    = actions
 forever actions  = actions ++ forever actions
 
 nothing actions  = actions
+
+pause actions    = (Pause, turtle):actions
+    where turtle = snd $ head actions
 
 getPos = pos
 
