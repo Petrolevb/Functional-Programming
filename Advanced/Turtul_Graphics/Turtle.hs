@@ -11,6 +11,7 @@ module Turtle (
   -- * Relative to the datas
     , getPos
     , getPen
+    , isShown
   -- * Primitive operations
     , forward
     , right
@@ -140,16 +141,20 @@ forever  :: Program -> Program
 nothing  :: Program -> Program
 -- | Put the program in pause, wait a continue from the user
 pause :: Program -> Program
+-- | Add a pause to the execution
+step       :: Program -> Program
+-- | Set the program in the stepping mode
+stepping   :: Program -> Program
+-- | Set the turtle as shown
+showTurtle :: Program -> Program
+-- | Set the turtle as hidden
+hideTurtle :: Program -> Program
 -- | Return the position of a turtle
 getPos :: Turtle -> Position
 -- | Return the state of the pen
 getPen :: Turtle -> Bool
-
-step       :: Program -> Program
-stepping   :: Program -> Program
-showTurtle :: Program -> Program
-hideTurtle :: Program -> Program
-
+-- | Return if the turtle is shown
+isShown :: Turtle -> Bool
 
 -- a function will "take" the turtle of the program, then apply the action
 -- and "build" the new program from it
@@ -225,9 +230,8 @@ pause actions    = (Pause, turtle):actions
     where turtle = snd $ head actions
 
 getPos = pos
-
 getPen = pen
-
+isShown = shown
 
 -- | From a position and a direction, return the new position 
 movePosition :: Position -> Double -> Double -> Position
