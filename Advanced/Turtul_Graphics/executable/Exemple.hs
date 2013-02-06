@@ -20,3 +20,12 @@ spiral tur size angle | size > 100 = nothing tur
 --       With the lifespan command, we make the turtle move until it dies.
 --       We need to update the size before each forward
 --       and spread the new value.
+
+
+-- Draw a flower of the size in parameter
+flower :: Program -> Double -> Program
+flower actions size = times (square size -=> right $ 10) 36
+
+-- Draw a square of size in parameter
+square :: Program -> Double -> Program
+square actions size = times (forward (head actions) size -=> right $ 90) 4

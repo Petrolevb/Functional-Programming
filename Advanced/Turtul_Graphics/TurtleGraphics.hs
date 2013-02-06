@@ -52,8 +52,7 @@ drawAction _ (_, tur) = return ()
 
 
 -- | Function that will draw a new line in the program
-drawLine :: (VertexComponent a1, ColorComponent a) =>
-            (a, a, a) -> [(a1, a1, a1)] -> IO()
+-- drawLine :: (VertexComponent a1, ColorComponent a) => (a, a, a) -> [(a1, a1, a1)] -> IO()
 drawLine (r,g,b) a = do
   GUI.color (Color3 r g b)
   renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
