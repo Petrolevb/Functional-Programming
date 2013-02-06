@@ -11,6 +11,7 @@ module Turtle (
   -- * Relative to the datas
     , getPos
     , getPen
+    , isShown
   -- * Primitive operations
     , forward
     , right
@@ -38,17 +39,17 @@ module Turtle (
 
 
 {- 
-------- Comments over the assignements ------
+------- Comments over the assignments ------
 
-We appologize about some features over this assignements
+We apologize about some features over this assignments
 we know that our implementation cannot cover the function forever
-nor than it can allow us to use the parralelization with <|>
+nor than it can allow us to use the parallelization with <|>
 
 Nevertheless, we already thought about how change the source code
 to use these features. Currently, we're using a program as a list 
 of Action, which disallow us to know which turtle are moving.
 We shall change this to another kind of list, or to a list of
-operations and parrameters, applied to a turtle. By this way,
+operations and parameters, applied to a turtle. By this way,
 the implementation of <|> will be just to cross the two lists.
 
 About the forever, the problem is that we have a stack of instructions
@@ -63,6 +64,10 @@ turtle won't go straight away but will spawn to the original point, go to
 its direction, then come back to the previous point, then go, etc...
 By using Operation and parameters, we will loop over this operation and the
 parameters not over the turtles
+
+We also know that the "stepping" function implies to change the implementation
+of the type Program. But our aim is now to perform a working program which
+will simply works, not something full of error
 
 -}
 
@@ -83,12 +88,13 @@ type Color       = (Double, Double, Double)
 data Turtle = Turtle {
                 pos :: Position, angle :: Double, 
                 getColor :: Color, pen :: Bool, 
-                life :: Int
+                life :: Int,
+                shown :: Bool
                      }
     deriving Show
 
 startingTurtle :: Turtle
-startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1)
+startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1) True
 
 -- | The type of a complete program
 --   The turle and the interface stored
@@ -102,8 +108,8 @@ type Action = (Operation, Turtle)
 
 -- | Define the different operation to know what to do
 data Operation =    Start    |
-                    Move     | Turn       |
-                    Color    | ChangeDraw |
+                    Move     | Turn       | Pause |
+                    Color    | ChangeDraw | ChangeShown |
                     GiveLife | Die
     deriving (Show, Eq)
 
@@ -133,13 +139,23 @@ times    :: Program -> Int -> Program
 forever  :: Program -> Program
 -- | Stops the turtle
 nothing  :: Program -> Program
+-- | Put the program in pause, wait a continue from the user
+pause :: Program -> Program
+-- | Add a pause to the execution
+step       :: Program -> Program
+-- | Set the program in the stepping mode
+stepping   :: Program -> Program
+-- | Set the turtle as shown
+showTurtle :: Program -> Program
+-- | Set the turtle as hidden
+hideTurtle :: Program -> Program
 -- | Return the position of a turtle
 getPos :: Turtle -> Position
 -- | Return the state of the pen
 getPen :: Turtle -> Bool
+-- | Return if the turtle is shown
+isShown :: Turtle -> Bool
 
--- a function will "take" the turtle of the program, then apply the action
--- and "build" the new program from it
 
 forward actions len | checkLife turtle (ceiling $ abs len)
                             = (Move, newturtle turtle len):actions
@@ -150,7 +166,7 @@ forward actions len | checkLife turtle (ceiling $ abs len)
           newturtle tur len
              = removeLife (
                Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
-                      (getColor tur) (pen tur) (life tur)
+                      (getColor tur) (pen tur) (life tur) (shown tur)
                ) (ceiling len)
 
 backward actions le = forward actions (-le)
@@ -162,34 +178,44 @@ right actions ang   | checkLife turtle 1
           newturtle tur ang 
              = decreaseLife $
                Turtle (pos tur) (angle tur + ang)
-                      (getColor tur) (pen tur) (life tur)
+                      (getColor tur) (pen tur) (life tur) (shown tur)
 
 left   actions  ang = right actions (360 - ang)
 
 color actions col   = (Color, newcol turtle col):actions
     where turtle = snd $ head actions
           newcol tur col
-             = Turtle (pos tur) (angle tur) col (pen tur) (life tur)
+             = Turtle (pos tur) (angle tur) 
+                      col (pen tur) (life tur)
+                      (shown tur)
 
 penup    actions    = (ChangeDraw, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             =  Turtle (pos tur) (angle tur) (getColor tur) False (life tur)
+             =  Turtle (pos tur) (angle tur) 
+                       (getColor tur) False (life tur)
+                       (shown tur)
 
 pendown  actions    = (ChangeDraw, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             = Turtle (pos tur) (angle tur) (getColor tur) True (life tur)
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) True (life tur)
+                      (shown tur)
 
 die      actions    = (Die, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             = Turtle (pos tur) (angle tur) (getColor tur) False 0
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) False 0
+                      (shown tur)
 
 lifespan actions li = (GiveLife, newturtle turtle):actions
     where turtle = snd $ head actions
           newturtle tur
-             = Turtle (pos tur) (angle tur) (getColor tur) (pen tur) li
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) (pen tur) li
+                      (shown tur)
 
 times actions x | x == 0    = actions
                 | otherwise = actions ++ times actions (x - 1)
@@ -198,10 +224,12 @@ forever actions  = actions ++ forever actions
 
 nothing actions  = actions
 
+pause actions    = (Pause, turtle):actions
+    where turtle = snd $ head actions
+
 getPos = pos
-
 getPen = pen
-
+isShown = shown
 
 -- | From a position and a direction, return the new position 
 movePosition :: Position -> Double -> Double -> Position
@@ -219,6 +247,7 @@ decreaseLife :: Turtle -> Turtle
 decreaseLife tur | life tur > -1 =
                         Turtle (pos tur) (angle tur)
                                (getColor tur) (pen tur) (life tur - 1)
+                               (shown tur)
                  | otherwise     = tur
 
 -- | Check  if the turtle has enough lifes
@@ -233,6 +262,22 @@ checkLife tur x | life tur > -1 = life tur >= x
 (-=>) :: Program -> (Program -> a -> Program) -> a -> Program
 prog -=> next = (\a -> next prog a)
 
+step       = undefined
+stepping   = undefined
+
+showTurtle actions           = (ChangeDraw, newturtle turtle):actions
+    where turtle = snd $ head actions
+          newturtle tur
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) (pen tur) (life tur)
+                      True
+hideTurtle actions           = (ChangeDraw, newturtle turtle):actions
+    where turtle = snd $ head actions
+          newturtle tur
+             = Turtle (pos tur) (angle tur) 
+                      (getColor tur) (pen tur) (life tur)
+                      False
+
 -- | Textual explanation of what a turtle do
 runTextual :: Program -> IO ()
 runTextual actions = do
@@ -240,6 +285,7 @@ runTextual actions = do
   runTextual' a
 
 runTextual' :: Program -> IO ()
+runTextual' [] = return ()
 runTextual' (_:[]) = return ()
 runTextual' ((_, stur):etur:ss) = do explainAction stur etur
                                      runTextual' (etur:ss)
@@ -281,4 +327,5 @@ explainAction sturtle (GiveLife, eturtle) = putStrLn text
         time s e | life s == -1 = life e
                  | otherwise = life e - life s
 explainAction _ (Die, _) = putStrLn "The turtle dies"
+explainAction _ (_, _)   = return ()
 
