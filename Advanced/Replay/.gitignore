@@ -1,0 +1,5 @@
+*.o
+dist
+.~lock*
+*.bak~
+*.pdf
