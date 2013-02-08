@@ -1,3 +1,5 @@
+module Replay where
+
 -- Types
 Replay q r a
 Trace r
