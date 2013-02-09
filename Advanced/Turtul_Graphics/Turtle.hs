@@ -73,20 +73,19 @@ will simply works, not something full of error
 
 
 
-
 -- | Coordinates x and y of the turtle
-type Position    = (Double, Double)
+type Position    = (Float, Float)
 -- | Orientation of the turtle around the axis z
-type Orientation = Double
+type Orientation = Float
 -- | Color of the turtle
-type Color       = (Double, Double, Double)
+type Color       = (Float, Float, Float)
 
 
 -- | A turtle has
 --     a position, an orientation, a color
 --     and knows if the pen is down (True) or up (False)
 data Turtle = Turtle {
-                pos :: Position, angle :: Double, 
+                pos :: Position, angle :: Float, 
                 getColor :: Color, pen :: Bool, 
                 life :: Int,
                 shown :: Bool
@@ -114,15 +113,15 @@ data Operation =    Start    |
     deriving (Show, Eq)
 
 -- | Move the turtle forward
-forward  :: Program -> Double -> Program
+forward  :: Program -> Float -> Program
 -- | Rotate the turtle to the right
-right    :: Program -> Double -> Program
+right    :: Program -> Float -> Program
 -- | Move the turtle backward
 --   rotating it by 180° and then move forward
-backward :: Program -> Double -> Program
+backward :: Program -> Float -> Program
 -- | Rotate the turtle to the left
 --   rotating to the right for 360-'value'
-left     :: Program -> Double -> Program
+left     :: Program -> Float -> Program
 -- | Change the color of the turtle
 color    :: Program -> Color -> Program
 -- | Avoid the turtle to draw for until the pen is down again
@@ -232,7 +231,7 @@ getPen = pen
 isShown = shown
 
 -- | From a position and a direction, return the new position 
-movePosition :: Position -> Double -> Double -> Position
+movePosition :: Position -> Float -> Float -> Position
 movePosition (x, y) ang len = (x + len * cos (ang * pi / 180), 
                                y + len * sin (ang * pi / 180))
 

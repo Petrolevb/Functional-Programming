@@ -5,6 +5,7 @@ import Control.Concurrent
 import Data.IORef
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT as GUI
+import Foreign.C.Types
 
 import Turtle as T
 
@@ -52,9 +53,10 @@ drawAction _ (_, tur) = return ()
 
 
 -- | Function that will draw a new line in the program
--- drawLine :: (VertexComponent a1, ColorComponent a) => (a, a, a) -> [(a1, a1, a1)] -> IO()
+drawLine :: (Float, Float, Float) -> [(Float, Float, Float)] -> IO()
 drawLine (r,g,b) a = do
-  GUI.color (Color3 r g b)
-  renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
+  GUI.color (Color3 (CFloat r) (CFloat g) (CFloat b))
+  renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 (CFloat x) (CFloat y) (CFloat z)) a
   flush
   swapBuffers
+  threadDelay 100000

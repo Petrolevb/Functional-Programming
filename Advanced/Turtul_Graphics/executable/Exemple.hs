@@ -12,7 +12,7 @@ test = runGraphical turtle3
         turtle3 = die turtle2
 
 
-spiral :: Program -> Double -> Double -> Program
+spiral :: Program -> Float -> Float -> Program
 spiral tur size angle | size > 100 = nothing tur
                       | otherwise  = 
             spiral (forward tur size -=> right $ angle) (size + 2) angle
@@ -23,9 +23,9 @@ spiral tur size angle | size > 100 = nothing tur
 
 
 -- Draw a flower of the size in parameter
-flower :: Program -> Double -> Program
+flower :: Program -> Float -> Program
 flower actions size = times (square [head actions] size -=> right $ 10) 36
 
 -- Draw a square of size in parameter
-square :: Program -> Double -> Program
+square :: Program -> Float -> Program
 square actions size = times (forward [head actions] size -=> right $ 90) 4
