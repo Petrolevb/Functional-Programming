@@ -15,8 +15,9 @@ instance Monad (Replay q r)
     where
 --        return :: i -> Replay q r i
         return i = Rep (\q -> \r -> i)
---       (>>=) :: Replay q r i1 -> (i1 -> Replay q r i2) -> Replay q r i2
-        (>>=)  = undefined
+--       (>>=) :: Replay q r a -> (a -> Replay q r b) -> Replay q r b
+        (Rep t) >>= k = Rep (\q0 -> \r0 -> let (Rep u) = k (t q0 r0) in u q0 r0)
+
 instance Show r => Show (Trace r)
 instance Read r => Read (Trace r)
 
