@@ -4,8 +4,10 @@ import System.Time(getClockTime, ClockTime(TOD))
 
 -- Types
 --newtype Replay q r i = Rep ( [Lift | Ask] -> r -> IO i)
-data Replay q r i = LiftIO (IO i) (Trace r) (Replay q r i) 
-                  | Ask q (Trace r) (Replay q r i)
+data Replay q r i = EmptyReplay 
+                  | LiftIO (IO i) (Trace r) (Replay q r i) 
+                  | Ask    q      (Trace r) (Replay q r i)
+                  | Final i
 data Trace r = Answer r (Trace r) 
              | Result r (Trace r)
              | Nil
@@ -16,11 +18,12 @@ type Question = String
 instance Monad (Replay q r)
     where
 --        return :: i -> Replay q r i
-        return i = undefined
---        return i = Rep (\q -> \r -> i)
+        return i = Final i
 --       (>>=) :: Replay q r a -> (a -> Replay q r b) -> Replay q r b
---        (Rep t) >>= k = Rep (\q0 -> \r0 -> let (Rep u) = k (t q0 r0) in u q0 r0)
-        a >>= f = undefined
+        EmptyReplay     >>= f = undefined
+        (LiftIO a b c)  >>= f = undefined
+        (Ask a b c)     >>= f = undefined
+        (Final i)       >>= f = undefined
 
 --instance Show r => Show (Trace r)
 instance Show r => Show (Trace r) where
@@ -34,15 +37,7 @@ liftIO io = undefined
 --liftIO io = LiftIO io (Item (Result (print.io)) emptyTrace)
 
 ask  :: q -> Replay q r r
-ask _ = undefined
---ask question = Ask question
---ask question = do
---    return (Rep question)
---    answer <- liftIO $ putStr $ show question
---    return answer
---ask question = do
---    answer <- liftIO question
---    return (Rep answer)
+ask question = Ask question emptyTrace EmptyReplay
 
 emptyTrace :: Trace r
 emptyTrace = Nil
@@ -50,8 +45,8 @@ addAnswer  :: Trace r -> r -> Trace r
 addAnswer traces a = Answer a traces
 
 run :: Replay q r a -> Trace r -> IO (Either (q, Trace r) a)
---run (Ask q traceRep next) (Item (Answer a) trace) = run next (addAnswer traceRep a)
---run (Ask q traceRep next) (Item _ trace)          = return Left (q, traceRep)
+run (Ask q traceRep next) (Answer a trace) = run next (addAnswer traceRep a)
+run (Ask q traceRep next) Nil              = return $ Left (q, traceRep)
 run _ _= undefined
 --run (LiftIO i) _             = undefined
 --run (Ask (q, r)) Nil         = return $ Left (q, (addAnswer Nil r))
