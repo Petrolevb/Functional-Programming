@@ -18,7 +18,13 @@ library
   exposed-modules:     
        Replay
   -- other-modules:       
-  build-depends:       base ==4.5.*
+  build-depends:       base >=4 , old-time
+
+Test-Suite test-replay
+    type:            exitcode-stdio-1.0
+    hs-source-dirs:  test
+    main-is:         test.hs
+    build-depends:   base, replay
 
 -- For technical reasons, the executable has to be in a separate directory.
 --  executable Replay
