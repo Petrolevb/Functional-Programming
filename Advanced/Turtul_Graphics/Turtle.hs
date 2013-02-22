@@ -6,7 +6,7 @@ module Turtle (
       Program
     , Turtle (getColor)
     , Action
-    , Operation (Move, Die)
+    , Operation (Move, Die, Forever, Pause)
     , startingProgram
   -- * Relative to the datas
     , getPos
@@ -30,9 +30,13 @@ module Turtle (
   -- * Derived operations
     , backward
     , left
+  -- * Useful functions
+    , recalculate
+    , startProg
+    , p
   
   -- * Run functions
-  , runTextual
+    , runTextual
   --, run
   
   ) where
@@ -71,6 +75,25 @@ will simply works, not something full of error
 
 -}
 
+{- Print part -}
+
+printTurtle :: Turtle -> String
+printTurtle tur = "Turtle : " ++
+                  "pos = " ++ (show $ pos tur) ++ ", " ++
+                  "angle = " ++ (show $ angle tur)
+
+instance Show Turtle where
+         show = printTurtle
+
+p a = putStrLn $ showP a
+
+showP (actions, args, turtle) = "[\n"++ concatMap showA actions ++ "]"
+
+showA :: Action -> String
+showA (op, tur) = "(" ++ show op ++ ", " ++ show tur ++ ")\n"
+
+--}
+
 
 
 -- | Coordinates x and y of the turtle
@@ -79,7 +102,6 @@ type Position    = (Float, Float)
 type Orientation = Float
 -- | Color of the turtle
 type Color       = (Float, Float, Float)
-
 
 -- | A turtle has
 --     a position, an orientation, a color
@@ -90,26 +112,33 @@ data Turtle = Turtle {
                 life :: Int,
                 shown :: Bool
                      }
-    deriving Show
+--    deriving Show
 
 startingTurtle :: Turtle
 startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1) True
 
 -- | The type of a complete program
 --   The turle and the interface stored
-type Program = [Action]
+type Program = ([Action], [Arg], Turtle)
 
+-- | Empty program
 startingProgram :: Program
-startingProgram = [(Start, startingTurtle)]
+startingProgram = ([(Start,startingTurtle)], [(0,0,(0,0,0))], startingTurtle)
+
+-- | Create an empty program starting with a specific turtle
+startProg :: Turtle -> Program
+startProg tur = ([(Start,startingTurtle)], [(0,0,(0,0,0))], tur)
 
 -- | An action is an Operation and the Turtle that result from this operation
 type Action = (Operation, Turtle)
+-- | The type of the arguments are Int, Float or Color
+type Arg    = (Int, Float, Color)
 
 -- | Define the different operation to know what to do
 data Operation =    Start    |
                     Move     | Turn       | Pause |
                     Color    | ChangeDraw | ChangeShown |
-                    GiveLife | Die
+                    GiveLife | Die        | Forever
     deriving (Show, Eq)
 
 -- | Move the turtle forward
@@ -156,75 +185,116 @@ getPen :: Turtle -> Bool
 isShown :: Turtle -> Bool
 
 
-forward actions len | checkLife turtle (ceiling $ abs len)
-                            = (Move, newturtle turtle len):actions
-                    | otherwise 
-                            = die $ 
-                              forward actions (fromIntegral $ life turtle)
-    where turtle = snd $ head actions
-          newturtle tur len
+forward (actions, args, turtle) len 
+    | checkLife turtle (ceiling $ abs len)
+        = ((Move, turtle):actions, (0,len,(0,0,0)):args, newturtle turtle len)
+    | otherwise 
+        = die $ 
+              forward (actions, args, turtle) (fromIntegral $ life turtle)
+    where newturtle tur len
              = removeLife (
                Turtle (movePosition (pos tur) (angle tur) len) (angle tur)
                       (getColor tur) (pen tur) (life tur) (shown tur)
                ) (ceiling len)
 
-backward actions le = forward actions (-le)
+backward prog len = forward prog (-len)
 
-right actions ang   | checkLife turtle 1
-                            = (Turn, newturtle turtle ang):actions
-                    | otherwise = die actions
-    where turtle = snd $ head actions
-          newturtle tur ang 
+right (actions, args, turtle) ang
+    | checkLife turtle 1
+        = ((Turn, turtle):actions, (0,ang,(0,0,0)):args, newturtle turtle ang)
+    | otherwise = die (actions, args, turtle)
+    where newturtle tur ang 
              = decreaseLife $
                Turtle (pos tur) (angle tur - ang)
                       (getColor tur) (pen tur) (life tur) (shown tur)
 
-left   actions  ang = right actions (360 - ang)
+left prog ang = right prog (360 - ang)
 
-color actions col   = (Color, newcol turtle col):actions
-    where turtle = snd $ head actions
-          newcol tur col
+color (actions, args, turtle) col
+    = ((Color, turtle):actions, (0,0,col):args, newturtle turtle col)
+    where newturtle tur col
              = Turtle (pos tur) (angle tur) 
                       col (pen tur) (life tur)
                       (shown tur)
 
-penup    actions    = (ChangeDraw, newturtle turtle):actions
-    where turtle = snd $ head actions
-          newturtle tur
+penup (actions, args, turtle)
+    = ((ChangeDraw, turtle):actions, (0,0,(0,0,0)):args, newturtle turtle)
+    where newturtle tur
              =  Turtle (pos tur) (angle tur) 
                        (getColor tur) False (life tur)
                        (shown tur)
 
-pendown  actions    = (ChangeDraw, newturtle turtle):actions
-    where turtle = snd $ head actions
-          newturtle tur
-             = Turtle (pos tur) (angle tur) 
-                      (getColor tur) True (life tur)
-                      (shown tur)
+pendown (actions, args, turtle)
+    = ((ChangeDraw, turtle):actions, (0,0,(0,0,0)):args, newturtle turtle)
+    where newturtle tur
+             =  Turtle (pos tur) (angle tur) 
+                       (getColor tur) True (life tur)
+                       (shown tur)
 
-die      actions    = (Die, newturtle turtle):actions
-    where turtle = snd $ head actions
-          newturtle tur
+die (actions, args, turtle)
+    = ((Die, turtle):actions, (0,0,(0,0,0)):args, newturtle turtle)
+    where newturtle tur
              = Turtle (pos tur) (angle tur) 
                       (getColor tur) False 0
                       (shown tur)
 
-lifespan actions li = (GiveLife, newturtle turtle):actions
-    where turtle = snd $ head actions
-          newturtle tur
+lifespan (actions, args, turtle) li
+    = ((GiveLife, turtle):actions, (li,0,(0,0,0)):args, newturtle turtle)
+    where newturtle tur
              = Turtle (pos tur) (angle tur) 
                       (getColor tur) (pen tur) li
                       (shown tur)
 
-times actions x | x == 0    = actions
-                | otherwise = actions ++ times actions (x - 1)
+times (actions, args, turtle) x
+    | x == 0    = (actions, args, turtle)
+    | otherwise = nothing ((newactions ++ nextactions, newargs ++ nextargs, newturtle))
+    where (newactions, newargs, newturtle)
+            = recalculate (reverse actions) args ([(Start, nextturtle)], [], nextturtle)
+          (nextactions, nextargs, nextturtle)
+            = times (actions, args, turtle) (x-1)
 
-forever actions  = actions ++ forever actions
+-- | Withdraw the first action which is Start
+recalculate :: [Action] -> [Arg] -> Program -> Program
+recalculate [] [] (actions, args, turtle)
+            = (newactions, args, turtle)
+              where newactions = reverse $ drop 1 (reverse actions)
+recalculate ((Start, _):actions) ((i, d, c):args) nactions
+            = recalculate actions args nactions
+recalculate ((Move, tur):actions) ((i, d, c):args) nactions
+            = recalculate actions args newactions
+              where newactions = forward nactions d
+recalculate ((Turn, tur):actions) ((i, d, c):args) nactions
+            = recalculate actions args newactions
+              where newactions = right nactions d
+recalculate ((Pause, _):actions) ((i, d, c):args) nactions
+            = recalculate actions args nactions
+--              where newactions = pause nactions
+recalculate ((Color, tur):actions) ((i, d, c):args) nactions
+            = recalculate actions args newactions
+              where newactions = color nactions c
+recalculate ((ChangeDraw, tur):actions) ((i, d, c):args) nactions
+            | pen tur   = recalculate actions args (penup nactions)
+            | otherwise = recalculate actions args (pendown nactions)
+recalculate ((ChangeShown, tur):actions) ((i, d, c):args) nactions
+            | shown tur = recalculate actions args (hideTurtle nactions)
+            | otherwise = recalculate actions args (showTurtle nactions)
+recalculate ((GiveLife, _):actions) ((i, d, c):args) nactions
+            = recalculate actions args newactions
+              where newactions = lifespan nactions i
+recalculate ((Die, _):actions) ((i, d, c):args) nactions
+            = recalculate actions args newactions
+              where newactions = die nactions
+recalculate ((Forever, _):actions) ((i, d, c):args) nactions
+            = forever nactions
+
+
+
+forever (actions, args, turtle)  = ((Forever, turtle):actions, args, turtle)
 
 nothing actions  = actions
 
-pause actions    = (Pause, turtle):actions
-    where turtle = snd $ head actions
+pause (actions, args, turtle) = ((Pause, turtle):actions, args, turtle)
+    
 
 getPos = pos
 getPen = pen
@@ -264,34 +334,35 @@ prog -=> next = (\a -> next prog a)
 step       = undefined
 stepping   = undefined
 
-showTurtle actions           = (ChangeDraw, newturtle turtle):actions
-    where turtle = snd $ head actions
-          newturtle tur
+showTurtle (actions, args, turtle)
+    = ((ChangeShown, turtle):actions,(0,0,(0,0,0)):args, newturtle turtle)
+    where newturtle tur
              = Turtle (pos tur) (angle tur) 
                       (getColor tur) (pen tur) (life tur)
                       True
-hideTurtle actions           = (ChangeDraw, newturtle turtle):actions
-    where turtle = snd $ head actions
-          newturtle tur
+hideTurtle (actions, args, turtle)
+    = ((ChangeShown, turtle):actions,(0,0,(0,0,0)):args, newturtle turtle)
+    where newturtle tur
              = Turtle (pos tur) (angle tur) 
                       (getColor tur) (pen tur) (life tur)
                       False
 
 -- | Textual explanation of what a turtle do
 runTextual :: Program -> IO ()
-runTextual actions = do
+runTextual (actions, args, turtle) = do
   let a = reverse actions
-  runTextual' a
+  runTextual' (a, args, turtle)
 
 runTextual' :: Program -> IO ()
-runTextual' [] = return ()
-runTextual' (_:[]) = return ()
-runTextual' ((_, stur):etur:ss) = do explainAction stur etur
-                                     runTextual' (etur:ss)
+runTextual' ([], _, _) = return ()
+runTextual' (action:[], _, etur) = explainAction action etur
+runTextual' (action:(a,etur):as, args, tur) = do
+                                     explainAction action etur
+                                     runTextual' ((a,etur):as, args, tur)
 
-explainAction :: Turtle -> Action -> IO ()
-explainAction _ (Start , _) =  putStrLn "The turtle starts"
-explainAction sturtle (Move, eturtle)
+explainAction :: Action -> Turtle -> IO ()
+explainAction (Start , _) _ =  putStrLn "The turtle starts"
+explainAction (Move, sturtle) eturtle 
             | not(getPen sturtle)  = do
                   let t = text ++ " without drawing"
                   putStrLn t 
@@ -307,24 +378,25 @@ explainAction sturtle (Move, eturtle)
         (x2, y2) = getPos eturtle
         coor = [(x1,y1,0),(x2,y2,0)]
         (r,g,b) = getColor sturtle
-explainAction sturtle (Turn, eturtle) = putStrLn text
+explainAction (Turn, sturtle) eturtle = putStrLn text
   where a1 = angle sturtle
         a2 = angle eturtle
         a  = a2 - a1
-        text = "The turtle turned " ++ show a ++ " degree"
-explainAction _ (Color, tur) = putStrLn text
+        text = "The turtle turns " ++ show a ++ " degree"
+explainAction (Color, tur) _ = putStrLn text
   where text = "The turtle changes the color to r : " ++ show r
                ++ ", g : " ++ show g ++ ", b : " ++ show b
         (r,g,b) = getColor tur
-explainAction sturtle (ChangeDraw, eturtle) = putStrLn text
+explainAction (ChangeDraw, sturtle) eturtle = putStrLn text
   where text = "The turtle puts the pen " ++ change sturtle eturtle
         change s e | pen s && not (pen e) = "up"
                    | otherwise = "down"
-explainAction sturtle (GiveLife, eturtle) = putStrLn text
+explainAction (GiveLife, sturtle) eturtle = putStrLn text
   where text = "The turtle gets " ++
                 show (time sturtle eturtle) ++ " time unit to live"
         time s e | life s == -1 = life e
                  | otherwise = life e - life s
-explainAction _ (Die, _) = putStrLn "The turtle dies"
-explainAction _ (_, _)   = return ()
+explainAction (Die, _) _ = putStrLn "The turtle dies"
+explainAction (Forever, _) _ = putStrLn "The turtle continues forever"
+explainAction (_, _) _ = return ()
 

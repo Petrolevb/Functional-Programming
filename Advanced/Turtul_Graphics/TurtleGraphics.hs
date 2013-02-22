@@ -10,53 +10,61 @@ import Foreign.C.Types
 import Turtle as T
 
 -- | Proving information to send to the graphical rendering
-data ProgramState = ProgramState { actions :: T.Program}
+data ProgramState = ProgramState { prog :: T.Program}
 
 -- | Initialize a window before drawing the program
 runGraphical ::  T.Program -> IO ()
-runGraphical actions = do
+runGraphical prog = do
   initialDisplayMode $= [RGBAMode, DoubleBuffered]
   initialWindowSize $= Size 800 800
   (progname, _) <- getArgsAndInitialize
 
-  state <- newIORef actions
+  state <- newIORef prog
 
   createWindow "Turtle Graphics"
   displayCallback $= run state
   mainLoop
 
-run ::  IORef [Action] -> IO ()
+run ::  IORef T.Program -> IO ()
 run state = do
   clear[ ColorBuffer ]
-  actions <- readIORef state
+  (actions, args, turtle) <- readIORef state
   let a = reverse actions
-  runGraphical' a
+  forever <- runGraphical' (a, args, turtle)
+  case forever of
+       True  -> do newState <- newIORef newProg
+                   run newState
+                    where newProg = recalculate actions args (startProg turtle)
+       False -> return ()
 
 -- | Helper function for going throught the list of Action
-runGraphical' :: T.Program -> IO ()
-runGraphical' [] = return ()
-runGraphical' (_:[]) = return ()
-runGraphical' ((_, stur):etur:ss) = do drawAction stur etur
-                                       runGraphical' (etur:ss)
+runGraphical' :: T.Program -> IO Bool
+runGraphical' ([], [], _) = return False
+runGraphical' (_:[], [], _) = return False
+runGraphical' ((Pause,_):_, _, _) = return False
+runGraphical' ((Die,_):_, _, _) = return False
+runGraphical' ((Forever,_):_, _, _) = return True
+runGraphical' (action1:(action2, etur):ss, arg:args, tur)
+              = do drawAction action1 etur
+                   runGraphical' ((action2,etur):ss, args, tur)
 
 -- | Draw a line if the action requires it
-drawAction :: Turtle -> Action -> IO ()
-drawAction sturtle
-              (Move, eturtle)
+drawAction :: Action -> Turtle -> IO ()
+drawAction (Move, sturtle) eturtle
                      | not(getPen sturtle)  = return ()
-                     | otherwise = do drawLine col coor
+                     | otherwise = drawLine col coor
   where (x1, y1) = getPos sturtle
         (x2, y2) = getPos eturtle
         coor = [(x1/100,y1/100,0),(x2/100,y2/100,0)]
         col = getColor sturtle
-drawAction _ (_, tur) = return ()
+drawAction (_, tur) _ = return ()
 
 
 -- | Function that will draw a new line in the program
 drawLine :: (Float, Float, Float) -> [(Float, Float, Float)] -> IO()
 drawLine (r,g,b) a = do
-  GUI.color (Color3 (CFloat r) (CFloat g) (CFloat b))
-  renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 (CFloat x) (CFloat y) (CFloat z)) a
+  GUI.color (Color3 r g b)
+  renderPrimitive Lines $ mapM_ (\(x, y, z)->vertex$Vertex3 x y z) a
   flush
   swapBuffers
-  threadDelay 100000
+--  threadDelay 100000
