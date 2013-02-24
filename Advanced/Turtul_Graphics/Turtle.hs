@@ -6,7 +6,7 @@ module Turtle (
       Program
     , Turtle (getColor)
     , Action
-    , Operation (Move, Die, Forever, Pause)
+    , Operation (Move, Die, Forever)
     , startingProgram
   -- * Relative to the datas
     , getPos
@@ -33,67 +33,11 @@ module Turtle (
   -- * Useful functions
     , recalculate
     , startProg
- --   , p
   
   -- * Run functions
     , runTextual
-  --, run
   
   ) where
-
-
-{- 
-------- Comments over the assignments ------
-
-We apologize about some features over this assignments
-we know that our implementation cannot cover the function forever
-nor than it can allow us to use the parallelization with <|>
-
-Nevertheless, we already thought about how change the source code
-to use these features. Currently, we're using a program as a list 
-of Action, which disallow us to know which turtle are moving.
-We shall change this to another kind of list, or to a list of
-operations and parameters, applied to a turtle. By this way,
-the implementation of <|> will be just to cross the two lists.
-
-About the forever, the problem is that we have a stack of instructions
-instead of a list. By the list implementation of haskell, we're adding
-each operations to the stack, then reverse this stack just before 
-executing operations. We shall change this by adding all instructions
-each time to the end of the list, which will allow the used of the function
-forever. In addition to that, the changing of the code for the <|> operation
-will also correct another problem of forever : we keep a turtle and an 
-instruction in the Action. Such as if we use forever with forward, the
-turtle won't go straight away but will spawn to the original point, go to
-its direction, then come back to the previous point, then go, etc...
-By using Operation and parameters, we will loop over this operation and the
-parameters not over the turtles
-
-We also know that the "stepping" function implies to change the implementation
-of the type Program. But our aim is now to perform a working program which
-will simply works, not something full of error
-
--}
-
-{- Print part -}
-{-
-printTurtle :: Turtle -> String
-printTurtle tur = "Turtle : " ++
-                  "pos = " ++ (show $ pos tur) ++ ", " ++
-                  "angle = " ++ (show $ angle tur)
-
-instance Show Turtle where
-         show = printTurtle
-
-p a = putStrLn $ showP a
-
-showP (actions, args, turtle) = "[\n"++ concatMap showA actions ++ "]"
-
-showA :: Action -> String
-showA (op, tur) = "(" ++ show op ++ ", " ++ show tur ++ ")\n"
-
---}
-
 
 
 -- | Coordinates x and y of the turtle
@@ -114,8 +58,13 @@ data Turtle = Turtle {
                      }
     deriving Show
 
+-- | Creates a turtle with :
+--   - the starting position (0,0)
+--   - the angle 0
+--   - the color white
+--   - without life
 startingTurtle :: Turtle
-startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1) True
+startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1) False
 
 -- | The type of a complete program
 --   The turle and the interface stored
@@ -125,7 +74,7 @@ type Program = ([Action], [Arg], Turtle)
 startingProgram :: Program
 startingProgram = ([(Start,startingTurtle)], [(0,0,(0,0,0))], startingTurtle)
 
--- | Create an empty program starting with a specific turtle
+-- | Creates an empty program starting with a specific turtle
 startProg :: Turtle -> Program
 startProg tur = ([(Start,startingTurtle)], [(0,0,(0,0,0))], tur)
 
@@ -136,7 +85,7 @@ type Arg    = (Int, Float, Color)
 
 -- | Define the different operation to know what to do
 data Operation =    Start    |
-                    Move     | Turn       | Pause |
+                    Move     | Turn       |
                     Color    | ChangeDraw | ChangeShown |
                     GiveLife | Die        | Forever
     deriving (Show, Eq)
@@ -165,17 +114,11 @@ lifespan :: Program -> Int -> Program
 times    :: Program -> Int -> Program
 -- | Run the program forever
 forever  :: Program -> Program
--- | Stops the turtle
+-- | Do noting, returns the program
 nothing  :: Program -> Program
--- | Put the program in pause, wait a continue from the user
-pause :: Program -> Program
--- | Add a pause to the execution
-step       :: Program -> Program
--- | Set the program in the stepping mode
-stepping   :: Program -> Program
--- | Set the turtle as shown
+-- | Change the boolean to indicate that the turtle has to be shown
 showTurtle :: Program -> Program
--- | Set the turtle as hidden
+-- | Change the boolean to indicate that the turtle has not to be shown
 hideTurtle :: Program -> Program
 -- | Return the position of a turtle
 getPos :: Turtle -> Position
@@ -247,8 +190,8 @@ lifespan (actions, args, turtle) li
 
 times (actions, args, turtle) x
     | x == 0    = (actions, args, turtle)
-    | otherwise = nothing ((newactions ++ nextactions, 
-                            newargs ++ nextargs, newturtle))
+    | otherwise = nothing (newactions ++ nextactions, 
+                            newargs ++ nextargs, newturtle)
     where (newactions, newargs, newturtle)
             = recalculate (reverse actions) (reverse args)
                           ([(Start, nextturtle)], [(0,0,(0,0,0))], nextturtle)
@@ -270,9 +213,8 @@ recalculate ((Move, tur):actions) ((i, d, c):args) nactions
 recalculate ((Turn, tur):actions) ((i, d, c):args) nactions
             = recalculate actions args newactions
               where newactions = right nactions d
-recalculate ((Pause, _):actions) ((i, d, c):args) nactions
-            = recalculate actions args nactions
---              where newactions = pause nactions
+--recalculate ((Pause, _):actions) ((i, d, c):args) nactions
+--           = recalculate actions args nactions
 recalculate ((Color, tur):actions) ((i, d, c):args) nactions
             = recalculate actions args newactions
               where newactions = color nactions c
@@ -294,10 +236,7 @@ recalculate ((Forever, _):actions) ((i, d, c):args) nactions
 
 forever (actions, args, turtle)  = ((Forever, turtle):actions, args, turtle)
 
-nothing actions  = actions
-
-pause (actions, args, turtle) = ((Pause, turtle):actions, args, turtle)
-    
+nothing actions  = actions    
 
 getPos = pos
 getPen = pen
@@ -333,9 +272,6 @@ checkLife tur x | life tur > -1 = life tur >= x
 --   forward x y -=> right x y ...
 (-=>) :: Program -> (Program -> a -> Program) -> a -> Program
 prog -=> next = (\a -> next prog a)
-
-step       = undefined
-stepping   = undefined
 
 showTurtle (actions, args, turtle)
     = ((ChangeShown, turtle):actions,(0,0,(0,0,0)):args, newturtle turtle)

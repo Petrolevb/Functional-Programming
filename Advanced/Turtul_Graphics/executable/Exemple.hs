@@ -4,7 +4,7 @@ import TurtleGraphics
 import Turtle
 
 --main = runGraphical $ spiral startingProgram 0 91
-main = runGraphical $ flower startingProgram 50
+main = runGraphical $ flower (color startingProgram (1.0,1.0,0.0)) 75
 
 spiral :: Program -> Float -> Float -> Program
 spiral tur size angle | size > 100 = nothing tur
