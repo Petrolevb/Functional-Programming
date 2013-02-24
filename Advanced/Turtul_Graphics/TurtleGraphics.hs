@@ -5,7 +5,6 @@ import Control.Concurrent
 import Data.IORef
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT as GUI
-import Foreign.C.Types
 
 import Turtle as T
 
@@ -30,7 +29,8 @@ run state = do
   clear[ ColorBuffer ]
   (actions, args, turtle) <- readIORef state
   let a = reverse actions
-  forever <- runGraphical' (a, args, turtle)
+  let arg = reverse args
+  forever <- runGraphical' (a, arg, turtle)
   case forever of
        True  -> do newState <- newIORef newProg
                    run newState
@@ -39,11 +39,8 @@ run state = do
 
 -- | Helper function for going throught the list of Action
 runGraphical' :: T.Program -> IO Bool
-runGraphical' ([], [], _) = return False
-runGraphical' (_:[], [], _) = return False
-runGraphical' ((Pause,_):_, _, _) = return False
-runGraphical' ((Die,_):_, _, _) = return False
 runGraphical' ((Forever,_):_, _, _) = return True
+runGraphical' (_:[], _, _) = return False
 runGraphical' (action1:(action2, etur):ss, arg:args, tur)
               = do drawAction action1 etur
                    runGraphical' ((action2,etur):ss, args, tur)

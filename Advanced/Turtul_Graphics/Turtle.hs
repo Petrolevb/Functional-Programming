@@ -33,7 +33,7 @@ module Turtle (
   -- * Useful functions
     , recalculate
     , startProg
-    , p
+ --   , p
   
   -- * Run functions
     , runTextual
@@ -76,7 +76,7 @@ will simply works, not something full of error
 -}
 
 {- Print part -}
-
+{-
 printTurtle :: Turtle -> String
 printTurtle tur = "Turtle : " ++
                   "pos = " ++ (show $ pos tur) ++ ", " ++
@@ -112,7 +112,7 @@ data Turtle = Turtle {
                 life :: Int,
                 shown :: Bool
                      }
---    deriving Show
+    deriving Show
 
 startingTurtle :: Turtle
 startingTurtle = Turtle (0, 0) 0 (1.0, 1.0, 1.0) True (-1) True
@@ -247,17 +247,21 @@ lifespan (actions, args, turtle) li
 
 times (actions, args, turtle) x
     | x == 0    = (actions, args, turtle)
-    | otherwise = nothing ((newactions ++ nextactions, newargs ++ nextargs, newturtle))
+    | otherwise = nothing ((newactions ++ nextactions, 
+                            newargs ++ nextargs, newturtle))
     where (newactions, newargs, newturtle)
-            = recalculate (reverse actions) args ([(Start, nextturtle)], [], nextturtle)
+            = recalculate (reverse actions) (reverse args)
+                          ([(Start, nextturtle)], [(0,0,(0,0,0))], nextturtle)
           (nextactions, nextargs, nextturtle)
             = times (actions, args, turtle) (x-1)
 
--- | Withdraw the first action which is Start
+-- | Recalculate the program
+--   Withdraw the first action which is Start
 recalculate :: [Action] -> [Arg] -> Program -> Program
 recalculate [] [] (actions, args, turtle)
-            = (newactions, args, turtle)
+            = (newactions, newargs, turtle)
               where newactions = reverse $ drop 1 (reverse actions)
+                    newargs = reverse $ drop 1 (reverse args)
 recalculate ((Start, _):actions) ((i, d, c):args) nactions
             = recalculate actions args nactions
 recalculate ((Move, tur):actions) ((i, d, c):args) nactions
@@ -286,7 +290,6 @@ recalculate ((Die, _):actions) ((i, d, c):args) nactions
               where newactions = die nactions
 recalculate ((Forever, _):actions) ((i, d, c):args) nactions
             = forever nactions
-
 
 
 forever (actions, args, turtle)  = ((Forever, turtle):actions, args, turtle)

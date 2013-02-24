@@ -3,19 +3,11 @@ module Main where
 import TurtleGraphics
 import Turtle
 
--- main = runGraphical $ spiral startingProgram 0 91
---main = runTextual $ spiral startingProgram 0 91
-main = runGraphical $ square startingProgram 100
-
-test = runGraphical turtle3
-  where turtle = forward startingProgram 50
-        turtle1 = right turtle 90
-        turtle2 = forward turtle1 50
-        turtle3 = die turtle2
-
+--main = runGraphical $ spiral startingProgram 0 91
+main = runGraphical $ flower startingProgram 50
 
 spiral :: Program -> Float -> Float -> Program
-spiral tur size angle | size > 10 = nothing tur
+spiral tur size angle | size > 100 = nothing tur
                       | otherwise  = 
             spiral (forward tur size -=> right $ angle) (size + 2) angle
 -- ^ Question : Can you use the lifespan command to define the example?
